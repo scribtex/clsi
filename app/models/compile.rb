@@ -1,7 +1,7 @@
 require 'rexml/document'
 
 class Compile
-  attr_reader :user, :project_id, :root_resource_path
+  attr_reader :user, :project_name, :root_resource_path, :resources
 
   # Create a new Compile instance and load it with the information from the
   # request.
@@ -15,11 +15,23 @@ class Compile
   def load_request(xml_request)
     request = parse_request(xml_request)
     token = request[:token]
-    @project_id = request[:project_id]
+    @project_name = request[:name]
     @root_resource_path = request[:root_resource_path]
 
     @user = User.find_by_token(token)
     raise CLSI::InvalidToken, 'user does not exist' if @user.nil?
+
+    @resources = []
+    for resource in request[:resources]
+      @resources << Resource.new(
+        resource[:path], 
+        resource[:modified_date],
+        resource[:content],
+        resource[:url],
+        @user,
+        @project
+      )
+    end
   end
 
   # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
@@ -40,8 +52,8 @@ class Compile
     raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
     request[:token] = token_tag.text
     
-    project_id_tag = compile_tag.elements['project-id']
-    request[:project_id] = project_id_tag.nil? ? nil : project_id_tag.text
+    name_tag = compile_tag.elements['name']
+    request[:name] = name_tag.nil? ? nil : name_tag.text
 
     resources_tag = compile_tag.elements['resources']
     raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?

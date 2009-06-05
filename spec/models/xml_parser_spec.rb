@@ -106,7 +106,7 @@ describe Compile do
       request = @compile.parse_request(<<-EOS
         <compile>
           <token>AdWn34899sKd03S</token>
-          <project-id>MyProject</project-id>
+          <name>MyProject</name>
           <resources root-resource-path="chapters/main.tex">
             <resource path="chapters/main.tex" modified="2009-03-29T06:00Z">Hello TeX.</resource>
             <resource path="chapters/chapter1.tex" modified="2009-03-29" url="http://www.latexlab.org/getfile/bsoares/23234543543"/>
@@ -117,7 +117,7 @@ describe Compile do
       EOS
       )
       request[:token].should eql 'AdWn34899sKd03S'
-      request[:project_id].should eql 'MyProject'
+      request[:name].should eql 'MyProject'
       request[:root_resource_path].should eql 'chapters/main.tex'
       request[:resources].should include({
         :path          => 'chapters/main.tex',
