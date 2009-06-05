@@ -92,7 +92,7 @@ describe Compile do
     end
   end
 
-  describe "compile" do
+  describe "successful compile" do
     before(:all) do
       @compile = Compile.new
       @user = User.create!
@@ -111,15 +111,61 @@ describe Compile do
         'Chapter1 Content!', nil,
         @project
       )
+      @compile.compile
     end
 
-    it "should produce a PDF" do 
-      @compile.compile
-      File.exist?(File.join(LATEX_COMPILE_DIR, @project.unique_id, 'output.pdf')).should be_true
+    it "should set the render status to success" do
+      @compile.status.should eql :success
+    end
+
+    it "should return the PDF for access by the client" do
+      rel_pdf_path = File.join('output', @project.unique_id, 'output.pdf')
+      @compile.return_files.should include(rel_pdf_path)
+      File.exist?(File.join(SERVER_ROOT_DIR, rel_pdf_path)).should be_true
+    end
+
+    it "should return the log for access by the client" do
+      rel_log_path = File.join('output', @project.unique_id, 'output.log')
+      @compile.return_files.should include(rel_log_path)
+      File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
     end
 
     after(:all) do
       FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @project.unique_id))
+    end
+  end
+
+  describe "unsuccessful compile" do
+    before(:all) do
+      @compile = Compile.new
+      @user = User.create!
+      @project = Project.create!(:name => 'Test Project', :user => @user)
+      @compile.user = @user
+      @compile.project = @project
+      @compile.root_resource_path = 'main.tex'
+      @compile.resources = []
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        '\\begin{document}', nil,
+        @project
+      )
+      @compile.compile
+    end
+
+    it "should set the render status to failed" do
+      @compile.status.should eql :failed
+    end
+
+    it "should return the log for access by the client" do
+      rel_log_path = File.join('output', @project.unique_id, 'output.log')
+      @compile.return_files.should include(rel_log_path)
+      File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
+    end
+
+    after(:all) do
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @project.unique_id))
     end
   end
 end

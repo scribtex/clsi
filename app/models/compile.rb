@@ -1,7 +1,12 @@
 require 'rexml/document'
 
 class Compile
-  attr_accessor :user, :project, :root_resource_path, :resources
+  attr_accessor :user, :project, :root_resource_path, :resources, :status, :return_files
+
+  def initialize
+    @status = :not_started
+    @return_files = []
+  end
 
   # Create a new Compile instance and load it with the information from the
   # request.
@@ -126,14 +131,32 @@ class Compile
     bibtex_command = "#{env_variables} #{BIBTEX_COMMAND} " +
                      "#{self.root_resource_path} > /dev/null"
 
+    warn 'warning: latex command has no time out functionality'
     system(latex_command)
     system(latex_command)
     system(bibtex_command)
     system(latex_command)
   end
 
-  # Cleans up
+  # Moves 
   def post_compile
-    # Nothing to do? We want to leave the files for access later
+    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.project.unique_id))
+
+    output_pdf_path = File.join(LATEX_COMPILE_DIR, self.project.unique_id, 'output.pdf')
+    rel_dest_pdf_path = File.join('output', self.project.unique_id, 'output.pdf')
+    if File.exist?(output_pdf_path)
+      @status = :success
+      FileUtils.mv(output_pdf_path, File.join(SERVER_ROOT_DIR, rel_dest_pdf_path))
+      @return_files << rel_dest_pdf_path
+    else
+      @status = :failed
+    end
+
+    output_log_path = File.join(LATEX_COMPILE_DIR, self.project.unique_id, 'output.log')
+    rel_dest_log_path = File.join('output', self.project.unique_id, 'output.log')
+    if File.exist?(output_log_path)
+      FileUtils.mv(output_log_path, File.join(SERVER_ROOT_DIR, rel_dest_log_path))
+      @return_files << rel_dest_log_path
+    end
   end
 end

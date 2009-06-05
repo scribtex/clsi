@@ -77,6 +77,7 @@ Rails::Initializer.run do |config|
 end
 
 require 'latex_config'
+require 'server_config'
 
 require 'exceptions'
 require 'utilities'
