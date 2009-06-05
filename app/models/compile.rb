@@ -1,7 +1,7 @@
 require 'rexml/document'
 
 class Compile
-  attr_reader :token, :project_id, :root_resource_path
+  attr_reader :user, :project_id, :root_resource_path
 
   # Create a new Compile instance and load it with the information from the
   # request.
@@ -13,10 +13,13 @@ class Compile
 
   # Extract all the information for the compile from the request
   def load_request(xml_request)
-    request = compile.parse_request(xml_request)
-    @token = request[:token]
+    request = parse_request(xml_request)
+    token = request[:token]
     @project_id = request[:project_id]
     @root_resource_path = request[:root_resource_path]
+
+    @user = User.find_by_token(token)
+    raise CLSI::InvalidToken, 'user does not exist' if @user.nil?
   end
 
   # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
