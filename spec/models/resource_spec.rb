@@ -22,6 +22,7 @@ describe Resource do
       file_path = File.join(LATEX_COMPILE_DIR, @project.unique_id, 'chapters/main.tex')
       File.exist?(file_path).should be_true
       File.read(file_path).should eql 'Test content'
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
     end
 
     it "should return the content passed directly" do

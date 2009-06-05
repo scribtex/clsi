@@ -91,4 +91,35 @@ describe Compile do
       end
     end
   end
+
+  describe "compile" do
+    before(:all) do
+      @compile = Compile.new
+      @user = User.create!
+      @project = Project.create!(:name => 'Test Project', :user => @user)
+      @compile.user = @user
+      @compile.project = @project
+      @compile.root_resource_path = 'main.tex'
+      @compile.resources = []
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        '\\documentclass{article} \\begin{document} \\input{chapters/chapter1} \\end{document}', nil,
+        @project
+      )
+      @compile.resources << Resource.new(
+        'chapters/chapter1.tex', nil,
+        'Chapter1 Content!', nil,
+        @project
+      )
+    end
+
+    it "should produce a PDF" do 
+      @compile.compile
+      File.exist?(File.join(LATEX_COMPILE_DIR, @project.unique_id, 'output.pdf')).should be_true
+    end
+
+    after(:all) do
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+    end
+  end
 end

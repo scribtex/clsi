@@ -1,7 +1,7 @@
 require 'rexml/document'
 
 class Compile
-  attr_reader :user, :project, :root_resource_path, :resources
+  attr_accessor :user, :project, :root_resource_path, :resources
 
   # Create a new Compile instance and load it with the information from the
   # request.
@@ -97,5 +97,43 @@ class Compile
     end
 
     return request
+  end
+
+  # Compiles resources into a PDF
+  def compile
+    pre_compile
+    do_compile
+    post_compile
+  end
+
+  # Writes resources to disk
+  def pre_compile
+    for resource in self.resources.to_a
+      resource.write_to_disk
+    end
+  end
+
+  # Runs LaTeX on files
+  def do_compile
+    compile_directory = File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
+    env_variables = "TEXMFOUTPUT=\"#{compile_directory}\" " +
+                    "TEXINPUTS=\"#{compile_directory}:$TEXINPUTS\" " + 
+                    "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
+                    "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
+    latex_command = "#{env_variables} #{LATEX_COMMAND} -interaction=batchmode " + 
+                    "-output-directory=\"#{compile_directory}\" -no-shell-escape " + 
+                    "-jobname=output #{self.root_resource_path} > /dev/null"
+    bibtex_command = "#{env_variables} #{BIBTEX_COMMAND} " +
+                     "#{self.root_resource_path} > /dev/null"
+
+    system(latex_command)
+    system(latex_command)
+    system(bibtex_command)
+    system(latex_command)
+  end
+
+  # Cleans up
+  def post_compile
+    # Nothing to do? We want to leave the files for access later
   end
 end
