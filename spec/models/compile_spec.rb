@@ -3,11 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe Compile do
   describe "new_from_request" do
     before(:each) do
-      @user = User.create!(:token => Digest::MD5.hexdigest('foo'))
+      @user = User.create!
     end
 
     describe "with valid request" do
-      before(:each) do
+      it "should load the information about the compile" do
         @compile = Compile.new_from_request(<<-EOS
           <compile>
             <token>#{@user.token}</token>
@@ -19,11 +19,11 @@ describe Compile do
           </compile>
         EOS
         )
-      end
 
-      it "should load the information about the compile" do
         @compile.user.should eql @user
-        @compile.project_name.should eql 'MyProject'
+        @compile.project.name.should eql 'MyProject'
+        @compile.project.user.should eql @user
+        @compile.project.unique_id.should_not be_blank
         @compile.root_resource_path.should eql 'chapters/main.tex'
  
         @compile.resources[0].should be_a(Resource)
@@ -35,6 +35,45 @@ describe Compile do
         @compile.resources[1].path.should eql 'chapters/chapter1.tex'
         @compile.resources[1].modified_date.should eql DateTime.parse('2009-03-29')
         @compile.resources[1].url.should eql 'http://www.latexlab.org/getfile/bsoares/23234543543'
+      end
+
+      it "should create a project with a random name if none is supplied" do
+        @compile = Compile.new_from_request(<<-EOS
+          <compile>
+            <token>#{@user.token}</token>
+            <resources></resources>
+          </compile>
+        EOS
+        )
+
+        @compile.project.name.should_not be_blank
+      end
+
+      it "should find an existing project if the name is already in use by the user" do
+        @project = Project.create!(:name => 'Existing Project', :user => @user)
+        @compile = Compile.new_from_request(<<-EOS
+          <compile>
+            <token>#{@user.token}</token>
+            <name>Existing Project</name>
+            <resources></resources>
+          </compile>
+        EOS
+        )
+        @compile.project.should eql(@project)
+      end
+
+      it "should create a new project if the name is already in use but by a different user" do
+        @another_user = User.create!
+        @project = Project.create!(:name => 'Existing Project', :user => @another_user)
+        @compile = Compile.new_from_request(<<-EOS
+          <compile>
+            <token>#{@user.token}</token>
+            <name>Existing Project</name>
+            <resources></resources>
+          </compile>
+        EOS
+        )
+        @compile.project.should_not eql(@project)
       end
     end
 

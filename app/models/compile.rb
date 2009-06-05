@@ -1,7 +1,7 @@
 require 'rexml/document'
 
 class Compile
-  attr_reader :user, :project_name, :root_resource_path, :resources
+  attr_reader :user, :project, :root_resource_path, :resources
 
   # Create a new Compile instance and load it with the information from the
   # request.
@@ -14,12 +14,20 @@ class Compile
   # Extract all the information for the compile from the request
   def load_request(xml_request)
     request = parse_request(xml_request)
-    token = request[:token]
-    @project_name = request[:name]
-    @root_resource_path = request[:root_resource_path]
 
+    @root_resource_path = request[:root_resource_path]
+    
+    token = request[:token]
     @user = User.find_by_token(token)
     raise CLSI::InvalidToken, 'user does not exist' if @user.nil?
+
+    project_name = request[:name]
+    if project_name.blank?
+      @project = Project.create!(:name => generate_unique_string, :user => @user)
+    else
+      @project = Project.find(:first, :conditions => {:name => project_name, :user_id => @user.id})
+      @project ||= Project.create!(:name => project_name, :user => @user)
+    end
 
     @resources = []
     for resource in request[:resources]
@@ -28,7 +36,6 @@ class Compile
         resource[:modified_date],
         resource[:content],
         resource[:url],
-        @user,
         @project
       )
     end

@@ -77,3 +77,4 @@ Rails::Initializer.run do |config|
 end
 
 require 'exceptions'
+require 'utilities'
