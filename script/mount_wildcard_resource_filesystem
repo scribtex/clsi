@@ -3,6 +3,10 @@
 require 'fusefs'
 
 class WildcardResourceFS < FuseFS::FuseDir
+  def contents(path)
+    print "contents: #{path}\n"
+  end
+
   def file?(path)
     print "file?: #{path}\n"
     WildcardResourceFilesystem.file?(path)

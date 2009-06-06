@@ -13,7 +13,7 @@ class ClsiController < ApplicationController
     begin
       @compile = Compile.new_from_request(xml_request)
       @compile.compile
-    rescue => e
+    rescue CLSI::Error => e
       return xml.compile do
         xml.status('failed parse', :reason => e.message)
       end

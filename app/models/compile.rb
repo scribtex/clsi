@@ -131,15 +131,17 @@ class Compile
   # Runs LaTeX on files
   def do_compile
     compile_directory = File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
+    wildcard_fs_directory = File.join(WILDCARD_FS_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
     env_variables = "TEXMFOUTPUT=\"#{compile_directory}\" " +
-                    "TEXINPUTS=\"#{compile_directory}:$TEXINPUTS\" " + 
+                    "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}:#{wildcard_fs_directory}\" " + 
                     "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
                     "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
     latex_command = "#{env_variables} #{LATEX_COMMAND} -interaction=batchmode " + 
                     "-output-directory=\"#{compile_directory}\" -no-shell-escape " + 
-                    "-jobname=output #{self.root_resource_path} > /dev/null"
+                    "-jobname=output #{self.root_resource_path}"
+    print latex_command
     bibtex_command = "#{env_variables} #{BIBTEX_COMMAND} " +
-                     "#{self.root_resource_path} > /dev/null"
+                     "#{self.root_resource_path}"
 
     warn 'warning: latex command has no time out functionality'
     system(latex_command)

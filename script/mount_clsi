@@ -1,18 +1,24 @@
 #!script/runner
 print "Mounting wildcard filesystem..."
 pid = fork{ 
-  Kernel.exec("script/mount_wildcard_resource_filesystem", "#{WILDCARD_RESOURCE_FILESYSTEM_DIR}")
+  Kernel.exec("script/mount_wildcard_resource_filesystem", "#{WILDCARD_FS_DIR}")
 }
 Process.detach pid
 File.open('.wildcard_filesystem_pid', 'w'){|f| f.write(pid.to_s)}
 print "Done!\n"
 
-print "Joining filesystems...\n"
-command = "sudo mount -t aufs -o " + 
-          "dirs=#{STATIC_FILESYSTEM_DIR}:#{WILDCARD_RESOURCE_FILESYSTEM_DIR}=ro " +
-          "none #{LATEX_COMPILE_DIR}"
+#sleep 10
 
-print "The following command requires root privileges:\n#{command}\n"
-system(command)
+#print "Joining filesystems...\n"
+#command = "sudo mount -t unionfs -o " + 
+#          "dir=#{STATIC_FILESYSTEM_DIR}:#{WILDCARD_RESOURCE_FILESYSTEM_DIR}=ro " +
+#          "none #{LATEX_COMPILE_DIR}"
+
+#command = "sudo mount -t aufs -o " + 
+#          "br=#{STATIC_FILESYSTEM_DIR}:#{WILDCARD_RESOURCE_FILESYSTEM_DIR}=ro " +
+#          "none #{LATEX_COMPILE_DIR}"
+
+#print "The following command requires root privileges:\n#{command}\n"
+#system(command)
 
 
