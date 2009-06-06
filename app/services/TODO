@@ -1,0 +1,4 @@
+* Token duration/expiry
+* Project expiry - projects currently sit forever
+* Caching of resources
+* Compile timeouts

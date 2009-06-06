@@ -168,4 +168,10 @@ describe Compile do
       FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @project.unique_id))
     end
   end
+
+  describe "timedout compile" do
+    it "should timeout" do
+      pending 'Compile timeouts'
+    end
+  end
 end
