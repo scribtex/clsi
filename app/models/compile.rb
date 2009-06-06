@@ -124,7 +124,7 @@ class Compile
   # Writes resources to disk
   def pre_compile
     for resource in self.resources.to_a
-      resource.write_to_disk
+      resource.write_to_disk unless resource.is_a?(WildcardResource)
     end
   end
 

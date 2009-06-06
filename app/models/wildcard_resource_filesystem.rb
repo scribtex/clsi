@@ -7,6 +7,8 @@ module WildcardResourceFilesystem
       if File.fnmatch?(resource.path, resource_path)
         url = resource.url.gsub!('%path%', resource_path)
         content = Utilities.get_content_from_url(url)
+        print "matched #{resource.path} with #{resource_path}\n"
+        print "trying url: #{url}\n"
         if content
           resource.content = content
           resource.save!
@@ -42,8 +44,8 @@ module WildcardResourceFilesystem
 
   def self.extract_project_and_resource_path(path)
     split_path = path.split('/')
-    project_unique_id = split_path[0]
-    resource_path = split_path[1..-1].join('/')
+    project_unique_id = split_path[1]
+    resource_path = split_path[2..-1].join('/')
     project = Project.find_by_unique_id(project_unique_id)
     raise ActiveRecord::RecordNotFound if project.nil?
     return project, resource_path

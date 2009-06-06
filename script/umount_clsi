@@ -1,0 +1,13 @@
+#!script/runner
+print "Unmounting union filesystem..."
+system("sudo umount #{LATEX_COMPILE_DIR}")
+print "Done!\n"
+
+print "Unmounting wildcard resource filesystem..."
+system("sudo umount #{WILDCARD_RESOURCE_FILESYSTEM_DIR}")
+print "Done!\n"
+
+pid = File.read('.wildcard_filesystem_pid')
+system("kill #{pid}")
+FileUtils.rm('.wildcard_filesystem_pid')
+
