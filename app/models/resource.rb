@@ -33,15 +33,26 @@ class Resource
 
   # Return the path where this resource should be written to for compiling
   def path_to_file_on_disk
-    File.join(LATEX_COMPILE_DIR, @project.unique_id, @path)
+    # Must expand any /../s to get absolute directories
+    path = File.expand_path(File.join(LATEX_COMPILE_DIR, @project.unique_id, @path))
+    compile_directory = File.expand_path(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+
+    # Check that the path begins with the compile directory and is thus inside it
+    len = compile_directory.length
+    unless path[0,len] == compile_directory
+      raise CLSI::InvalidPath, 'path is not inside the compile directory'
+    end
+
+    return path
   end
 
   # Write the contents of this resource to the location provided by the path
   # of the resource
   def write_to_disk
-    dir_path = File.dirname(path_to_file_on_disk)
+    path = path_to_file_on_disk
+    dir_path = File.dirname(path)
     FileUtils.mkdir_p(dir_path)
-    File.open(path_to_file_on_disk, 'w') {|f| f.write(self.content)}
+    File.open(path, 'w') {|f| f.write(self.content)}
   end
 end
 

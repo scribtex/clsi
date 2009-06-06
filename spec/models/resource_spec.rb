@@ -30,7 +30,7 @@ describe Resource do
     end
   end
 
-  describe "with content take from an URL" do
+  describe "with content taken from an URL" do
     before(:each) do
       @resource = Resource.new(
          'chapters/main.tex',
@@ -44,6 +44,24 @@ describe Resource do
     it "should return the content from the URL" do
       Net::HTTP.should_receive(:get).with(URI.parse('http://www.example.com/main.tex')).and_return('URL content')
       @resource.content.should eql 'URL content'
+    end
+  end
+
+  describe "with a path that tries to break out of the compile directory" do
+    before(:each) do
+      @resource = Resource.new(
+         '../../main.tex',
+         nil,
+         'Content',
+         nil,
+         @project
+      )
+    end
+
+    it "should raise a CLSI::InvalidPath error when writen to disk" do
+      lambda{
+        @resource.write_to_disk
+      }.should raise_error(CLSI::InvalidPath, 'path is not inside the compile directory')
     end
   end
 end
