@@ -1,6 +1,3 @@
-require 'net/http'
-require 'uri'
-
 class Resource
   attr_reader :path, :modified_date, :url
 
@@ -16,19 +13,10 @@ class Resource
   # directly, from the cache or from an URL.
   def content
     if @content.nil?
-      content_from_url
+      Utilities.get_content_from_url(@url)
     else
       @content
     end
-  end
-
-  # Fetch the content from the URL of this resource
-  def content_from_url
-    # TODO: This could be made more robust with return value checking,
-    # redirect following, specific error catching etc.
-    Net::HTTP.get URI.parse(@url)
-  rescue
-    ""
   end
 
   # Return the path where this resource should be written to for compiling

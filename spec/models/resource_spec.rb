@@ -42,7 +42,7 @@ describe Resource do
     end
     
     it "should return the content from the URL" do
-      Net::HTTP.should_receive(:get).with(URI.parse('http://www.example.com/main.tex')).and_return('URL content')
+      Utilities.should_receive(:get_content_from_url).with('http://www.example.com/main.tex').and_return('URL content')
       @resource.content.should eql 'URL content'
     end
   end

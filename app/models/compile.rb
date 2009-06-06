@@ -36,13 +36,23 @@ class Compile
 
     @resources = []
     for resource in request[:resources]
-      @resources << Resource.new(
-        resource[:path], 
-        resource[:modified_date],
-        resource[:content],
-        resource[:url],
-        @project
-      )
+      if resource[:path].include?('*') or resource[:path].include?('?')
+        # This is a resource with a wild card
+        @resources << WildcardResource.create!(
+          :path    => resource[:path],
+          :url     => resource[:url],
+          :project => @project
+        )
+      else
+        # This is a normal resource
+        @resources << Resource.new(
+          resource[:path], 
+          resource[:modified_date],
+          resource[:content],
+          resource[:url],
+          @project
+        )
+      end
     end
   end
 

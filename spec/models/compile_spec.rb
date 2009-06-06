@@ -15,6 +15,7 @@ describe Compile do
             <resources root-resource-path="chapters/main.tex">
               <resource path="chapters/main.tex" modified="2009-03-29T06:00Z">Hello TeX.</resource>
               <resource path="chapters/chapter1.tex" modified="2009-03-29" url="http://www.latexlab.org/getfile/bsoares/23234543543"/>
+              <resource path="chapters/*.tex" url="http://www.latexlab.org/getfile/%path%"/>
             </resources>
           </compile>
         EOS
@@ -35,6 +36,11 @@ describe Compile do
         @compile.resources[1].path.should eql 'chapters/chapter1.tex'
         @compile.resources[1].modified_date.should eql DateTime.parse('2009-03-29')
         @compile.resources[1].url.should eql 'http://www.latexlab.org/getfile/bsoares/23234543543'
+ 
+        @compile.resources[2].should be_a(WildcardResource)
+        @compile.resources[2].path.should eql 'chapters/*.tex'
+        @compile.resources[2].url.should eql 'http://www.latexlab.org/getfile/%path%'
+        @compile.resources[2].project.should eql @compile.project
       end
 
       it "should create a project with a random name if none is supplied" do
