@@ -1,6 +1,9 @@
 module CLSI
-  class Error < RuntimeError; end
-  class ParseError < Error; end
-  class InvalidToken < Error; end
-  class InvalidPath < Error; end
+  class ParseError < RuntimeError; end
+  class InvalidToken < ParseError; end
+  class InvalidPath < ParseError; end
+  
+  class CompileError < RuntimeError; end
+  class NoOutputProduced < CompileError; end
+  class ImpossibleFormatConversion < CompileError; end
 end

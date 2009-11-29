@@ -116,10 +116,6 @@ describe Compile do
       @compile.compile
     end
 
-    it "should set the render status to success" do
-      @compile.status.should eql :success
-    end
-
     it "should return the PDF for access by the client" do
       rel_pdf_path = File.join('output', @project.unique_id, 'output.pdf')
       @compile.return_files.should include(rel_pdf_path)
@@ -153,11 +149,7 @@ describe Compile do
         @project,
         @user
       )
-      @compile.compile
-    end
-
-    it "should set the render status to failed" do
-      @compile.status.should eql :failed
+      lambda {@compile.compile}.should raise_error CLSI::NoOutputProduced
     end
 
     it "should return the log for access by the client" do

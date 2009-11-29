@@ -1,5 +1,10 @@
+Enhancements:
+* Different compiles/output formats
+
+Self admin:
 * Token duration/expiry
 * Project expiry - projects currently sit forever
-* Caching of resources
+
+Security:
 * Compile timeouts
 * URL Download size limits

@@ -11,20 +11,21 @@ class ClsiController < ApplicationController
 
     begin
       @compile = Compile.new_from_request(xml_request)
-      @compile.compile
-    rescue CLSI::Error => e
+    rescue CLSI::ParseError => e
       render :xml => (xml.compile do
         xml.status('failed parse', :reason => e.message)
       end)
       return
     end
-
+    
+    
     render :xml => (xml.compile do
-      if @compile.status == :success
+      begin
+        @compile.compile
         xml.status('success')
-      else
-        xml.status('failed compile')
-      end      
+      rescue CLSI::CompileError
+        xml.status('compile failed')
+      end
       xml.name(@compile.project.name)
       xml.output do
         for file_url in @compile.return_files

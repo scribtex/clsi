@@ -38,7 +38,7 @@ describe ClsiController do
 
     it "should return the log file for an unsuccessful compile" do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
-      @compile.stub!(:compile)
+      @compile.stub!(:compile).and_raise(CLSI::CompileError)
       @compile.stub!(:status).and_return(:failed)
       @compile.stub!(:return_files).and_return(['output/output.log'])
 
@@ -47,7 +47,7 @@ describe ClsiController do
       result = response.body
       
       parser = REXML::Document.new result
-      parser.elements['compile'].elements['status'].text.should eql 'failed compile'
+      parser.elements['compile'].elements['status'].text.should eql 'compile failed'
       parser.elements['compile'].elements['name'].text.should eql 'My Project'
 
       file = parser.elements['compile'].elements['output'].elements[1]

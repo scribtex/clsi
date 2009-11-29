@@ -1,7 +1,15 @@
 require 'rexml/document'
 
 class Compile
-  attr_accessor :user, :project, :root_resource_path, :resources, :status, :return_files
+  attr_accessor :user, :project, :root_resource_path, :resources, :status, :return_files, :compiler, :output_format
+
+  def compiler 
+    @compiler ||= 'pdflatex'
+  end
+
+  def output_format
+    @output_format ||= 'pdf'
+  end
 
   def initialize
     @status = :not_started
@@ -105,53 +113,56 @@ class Compile
     return request
   end
 
-  # Compiles resources into a PDF
   def compile
-    pre_compile
+    write_resources_to_disk
     do_compile
-    post_compile
+    convert_to_output_format
+    move_compiled_files_to_public_dir
   end
 
-  # Writes resources to disk
-  def pre_compile
+  def write_resources_to_disk
     for resource in self.resources.to_a
       resource.write_to_disk
     end
   end
 
-  # Runs LaTeX on files
   def do_compile
-    compile_directory = File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
-    env_variables = "TEXMFOUTPUT=\"#{compile_directory}\" " +
-                    "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}\" " + 
-                    "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
-                    "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
-    latex_command = "#{env_variables} #{LATEX_COMMAND} -interaction=batchmode " + 
-                    "-output-directory=\"#{compile_directory}\" -no-shell-escape " + 
-                    "-jobname=output #{self.root_resource_path}"
-    print latex_command
-    bibtex_command = "#{env_variables} #{BIBTEX_COMMAND} " +
+    bibtex_command = "#{tex_env_variables} #{BIBTEX_COMMAND} " +
                      "#{self.root_resource_path}"
 
     warn 'warning: latex command has no time out functionality'
-    system(latex_command)
-    system(latex_command)
+    system(compile_command)
+    system(compile_command)
     system(bibtex_command)
-    system(latex_command)
+    system(compile_command)
+  end
+  
+  def convert_to_output_format
+    case self.compiler
+    when 'pdflatex'
+      input_format = 'pdf'
+    when 'latex'
+      input_format = 'dvi'
+    end
+    conversion_function = "convert_#{input_format}_to_#{self.output_format}"
+    if self.respond_to?(conversion_function)
+      self.send(conversion_function)
+    else
+      raise CLSI::ImpossibleFormatConversion, "can't convert #{input_format} to #{self.output_format}"
+    end
   end
 
-  # Moves 
-  def post_compile
+  def move_compiled_files_to_public_dir
     FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.project.unique_id))
 
     output_pdf_path = File.join(LATEX_COMPILE_DIR, self.project.unique_id, 'output.pdf')
     rel_dest_pdf_path = File.join('output', self.project.unique_id, 'output.pdf')
     if File.exist?(output_pdf_path)
-      @status = :success
+      status = :success
       FileUtils.mv(output_pdf_path, File.join(SERVER_ROOT_DIR, rel_dest_pdf_path))
       @return_files << rel_dest_pdf_path
     else
-      @status = :failed
+      status = :failed
     end
 
     output_log_path = File.join(LATEX_COMPILE_DIR, self.project.unique_id, 'output.log')
@@ -160,5 +171,40 @@ class Compile
       FileUtils.mv(output_log_path, File.join(SERVER_ROOT_DIR, rel_dest_log_path))
       @return_files << rel_dest_log_path
     end
+    
+    raise CLSI::NoOutputProduced, 'no compiled documents were produced' if status == :failed
+  end
+  
+  def tex_env_variables
+    @tex_env_variables ||= "TEXMFOUTPUT=\"#{compile_directory}\" " +
+                           "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}\" " + 
+                           "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
+                           "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
+  end
+  
+  def compile_directory
+    @compile_directory ||= File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
+  end
+  
+  def compile_command
+    case self.compiler
+    when 'pdflatex'
+      command = PDFLATEX_COMMAND
+    when 'latex'
+      command = LATEX_COMMAND
+    else
+      raise NotImplemented
+    end
+    return "#{tex_env_variables} #{command} -interaction=batchmode " + 
+           "-output-directory=\"#{compile_directory}\" -no-shell-escape " + 
+           "-jobname=output #{self.root_resource_path}"
+  end
+  
+  def convert_pdf_to_pdf
+    # Nothing to do!
+  end
+  
+  def run_command_with_timeout(command)
+    system(command)
   end
 end
