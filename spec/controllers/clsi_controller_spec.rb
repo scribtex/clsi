@@ -1,10 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
-require 'action_web_service/test_invoke'
 
 describe ClsiController do
   describe 'getToken' do
     it "should return a token and create a user with that token" do
-      token = invoke :getToken
+      get :get_token
+      token = response.body
       token.length.should eql 32
       user = User.find_by_token(token)
       user.should_not be_nil
@@ -18,7 +18,8 @@ describe ClsiController do
       @compile.stub!(:status).and_return(:success)
       @compile.stub!(:return_files).and_return(['output/output.pdf', 'output/output.log'])
       Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      result = invoke :compile, 'request_xml'
+      result = get :compile, :request => 'request_xml'
+      result = response.body
       
       parser = REXML::Document.new result
       parser.elements['compile'].elements['status'].text.should eql 'success'
@@ -42,7 +43,8 @@ describe ClsiController do
       @compile.stub!(:return_files).and_return(['output/output.log'])
 
       Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      result = invoke :compile, 'request_xml'
+      get :compile, :request => 'request_xml'
+      result = response.body
       
       parser = REXML::Document.new result
       parser.elements['compile'].elements['status'].text.should eql 'failed compile'
@@ -57,7 +59,8 @@ describe ClsiController do
     it "should return an error message for an unsuccessful compile" do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
       Compile.should_receive('new_from_request').with('bad_xml').and_raise(CLSI::ParseError.new('malformed XML'))
-      result = invoke :compile, 'bad_xml'
+      get :compile, :request => 'bad_xml'
+      result = response.body
       
       parser = REXML::Document.new result
       #raise result

@@ -2,3 +2,4 @@
 * Project expiry - projects currently sit forever
 * Caching of resources
 * Compile timeouts
+* URL Download size limits

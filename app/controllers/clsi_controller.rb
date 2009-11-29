@@ -1,25 +1,25 @@
 class ClsiController < ApplicationController
-  wsdl_service_name 'Clsi'
-  web_service_api ClsiApi
-
-  def getToken
+  def get_token
     user = User.create!
-    return user.token
+    render :text => user.token
   end
 
-  def compile(xml_request)
+  def compile
+    xml_request = params[:request]
     xml = Builder::XmlMarkup.new(:indent => 4)
+    xml.instruct!
 
     begin
       @compile = Compile.new_from_request(xml_request)
       @compile.compile
     rescue CLSI::Error => e
-      return xml.compile do
+      render :xml => (xml.compile do
         xml.status('failed parse', :reason => e.message)
-      end
+      end)
+      return
     end
 
-    return xml.compile do
+    render :xml => (xml.compile do
       if @compile.status == :success
         xml.status('success')
       else
@@ -32,6 +32,6 @@ class ClsiController < ApplicationController
           xml.file(:url => file_url, :type => type)
         end
       end
-    end    
+    end)  
   end
 end

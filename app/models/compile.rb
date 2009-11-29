@@ -36,23 +36,13 @@ class Compile
 
     @resources = []
     for resource in request[:resources]
-      if resource[:path].include?('*') or resource[:path].include?('?')
-        # This is a resource with a wild card
-        @resources << WildcardResource.create!(
-          :path    => resource[:path],
-          :url     => resource[:url],
-          :project => @project
-        )
-      else
-        # This is a normal resource
-        @resources << Resource.new(
-          resource[:path], 
-          resource[:modified_date],
-          resource[:content],
-          resource[:url],
-          @project
-        )
-      end
+      @resources << Resource.new(
+        resource[:path], 
+        resource[:modified_date],
+        resource[:content],
+        resource[:url],
+        @project
+      )
     end
   end
 
@@ -124,7 +114,7 @@ class Compile
   # Writes resources to disk
   def pre_compile
     for resource in self.resources.to_a
-      resource.write_to_disk unless resource.is_a?(WildcardResource)
+      resource.write_to_disk
     end
   end
 
