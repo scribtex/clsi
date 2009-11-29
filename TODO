@@ -1,3 +1,5 @@
+* Check whether output format is possible for the given compiler
+
 Enhancements:
 * Different compiles/output formats
 

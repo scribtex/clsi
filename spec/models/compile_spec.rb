@@ -113,19 +113,50 @@ describe Compile do
         @project,
         @user
       )
-      @compile.compile
+    end
+    
+    shared_examples_for 'an output format of pdf' do
+      it "should return the PDF for access by the client" do
+        rel_pdf_path = File.join('output', @project.unique_id, 'output.pdf')
+        @compile.return_files.should include(rel_pdf_path)
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_pdf_path)).should be_true
+      end
+    end
+    
+    shared_examples_for 'an output format of dvi' do
+      it "should return the DVI for access by the client" do
+        rel_path = File.join('output', @project.unique_id, 'output.dvi')
+        @compile.return_files.should include(rel_path)
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+      end
+    end
+    
+    shared_examples_for 'a successful compile' do
+      it "should return the log for access by the client" do
+        rel_log_path = File.join('output', @project.unique_id, 'output.log')
+        @compile.return_files.should include(rel_log_path)
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
+      end
+    end
+    
+    describe 'with pdflatex compiler and output format of pdf' do
+      before do
+        @compile.compile
+      end
+      
+      it_should_behave_like 'an output format of pdf'
+      it_should_behave_like 'a successful compile'
     end
 
-    it "should return the PDF for access by the client" do
-      rel_pdf_path = File.join('output', @project.unique_id, 'output.pdf')
-      @compile.return_files.should include(rel_pdf_path)
-      File.exist?(File.join(SERVER_ROOT_DIR, rel_pdf_path)).should be_true
-    end
+    describe 'with latex compiler and output format of dvi' do
+      before do
+        @compile.compiler = 'latex'
+        @compile.output_format = 'dvi'
+        @compile.compile
+      end
 
-    it "should return the log for access by the client" do
-      rel_log_path = File.join('output', @project.unique_id, 'output.log')
-      @compile.return_files.should include(rel_log_path)
-      File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
+      it_should_behave_like 'an output format of dvi'
+      it_should_behave_like 'a successful compile'
     end
 
     after(:all) do
