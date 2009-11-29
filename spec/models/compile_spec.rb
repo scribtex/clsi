@@ -104,12 +104,14 @@ describe Compile do
       @compile.resources << Resource.new(
         'main.tex', nil,
         '\\documentclass{article} \\begin{document} \\input{chapters/chapter1} \\end{document}', nil,
-        @project
+        @project,
+        @user
       )
       @compile.resources << Resource.new(
         'chapters/chapter1.tex', nil,
         'Chapter1 Content!', nil,
-        @project
+        @project,
+        @user
       )
       @compile.compile
     end
@@ -148,7 +150,8 @@ describe Compile do
       @compile.resources << Resource.new(
         'main.tex', nil,
         '\\begin{document}', nil,
-        @project
+        @project,
+        @user
       )
       @compile.compile
     end

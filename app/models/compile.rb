@@ -41,7 +41,8 @@ class Compile
         resource[:modified_date],
         resource[:content],
         resource[:url],
-        @project
+        @project,
+        @user
       )
     end
   end
@@ -121,9 +122,8 @@ class Compile
   # Runs LaTeX on files
   def do_compile
     compile_directory = File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
-    wildcard_fs_directory = File.join(WILDCARD_FS_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
     env_variables = "TEXMFOUTPUT=\"#{compile_directory}\" " +
-                    "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}:#{wildcard_fs_directory}\" " + 
+                    "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}\" " + 
                     "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
                     "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
     latex_command = "#{env_variables} #{LATEX_COMMAND} -interaction=batchmode " + 

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090606125848) do
+ActiveRecord::Schema.define(:version => 20091129154404) do
 
   create_table "projects", :force => true do |t|
     t.string   "name"
@@ -19,17 +19,14 @@ ActiveRecord::Schema.define(:version => 20090606125848) do
     t.datetime "updated_at"
   end
 
-  create_table "users", :force => true do |t|
-    t.string   "token"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table "url_caches", :force => true do |t|
+    t.string   "url",        :null => false
+    t.datetime "fetched_at", :null => false
+    t.binary   "content"
   end
 
-  create_table "wildcard_resources", :force => true do |t|
-    t.string   "path"
-    t.string   "url"
-    t.string   "project_id"
-    t.binary   "content",    :limit => 4194304
+  create_table "users", :force => true do |t|
+    t.string   "token"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

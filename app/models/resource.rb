@@ -1,22 +1,22 @@
 class Resource
   attr_reader :path, :modified_date, :url
 
-  def initialize(path, modified_date, content, url, project)
-    @path = path
+  def initialize(path, modified_date, content, url, project, user)
+    @path          = path
     @modified_date = modified_date
-    @content = content
-    @url = url
-    @project = project
+    @content       = content
+    @url           = url
+    @project       = project
+    @user          = user
   end
 
   # Return the content of this resource. This might come from being passed
   # directly, from the cache or from an URL.
   def content
-    if @content.nil?
-      Utilities.get_content_from_url(@url)
-    else
-      @content
+    unless @url.nil?
+      @content ||= UrlCache.get_content_from_url(@url, @modified_date)
     end
+    @content
   end
 
   # Return the path where this resource should be written to for compiling

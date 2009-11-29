@@ -13,7 +13,8 @@ describe Resource do
          nil,
          'Test content',
          nil,
-         @project
+         @project,
+         @user
       )
     end
 
@@ -30,20 +31,76 @@ describe Resource do
     end
   end
 
-  describe "with content taken from an URL" do
+  describe "with an URL for content" do
     before(:each) do
+      @begin_test_time = Time.now
       @resource = Resource.new(
          'chapters/main.tex',
-         nil,
+         Time.now - 3.days,
          nil,
          'http://www.example.com/main.tex',
-         @project
+         @project,
+         @user
       )
     end
     
-    it "should return the content from the URL" do
-      Utilities.should_receive(:get_content_from_url).with('http://www.example.com/main.tex').and_return('URL content')
-      @resource.content.should eql 'URL content'
+    describe "already in cache" do
+      before do
+        UrlCache.create!(:url => @resource.url, :content => (@cached_content = 'Cached Content'),
+                         :fetched_at => (@resource.modified_date + 1.day))
+      end
+      
+      it "should return the cached content" do
+        Utilities.should_not_receive(:get_content_from_url).with(@resource.url)
+        @resource.content.should eql @cached_content
+      end
+    end
+    
+    shared_examples_for "an url is fetched and the cache updated" do
+      it "should return the content from the URL" do
+        @resource.content.should eql @url_content
+      end
+      
+      it "should update the cache with the fetched URL content" do
+        cached_url = UrlCache.find(:first, :conditions => {:url => @resource.url})
+        cached_url.should_not be_nil
+        cached_url.content.should eql @url_content
+        # TODO: Stupid time in tests!
+        #(cached_url.fetched_at >= @begin_test_time).should be_true
+        #(cached_url.fetched_at <= Time.now).should be_true
+      end
+    end
+    
+    describe "with an older version in the cache" do
+      before do
+        Utilities.should_receive(:get_content_from_url).with(@resource.url).and_return(@url_content = 'URL content')
+        UrlCache.create!(:url => @resource.url, :content => (@cached_content = 'Cached Content'),
+                         :fetched_at => (@resource.modified_date - 1.day))
+        @resource.content
+      end
+      
+      it_should_behave_like "an url is fetched and the cache updated"
+    end
+    
+    describe "already in cache when resource has no modified date" do
+      before do
+        Utilities.should_receive(:get_content_from_url).with(@resource.url).and_return(@url_content = 'URL content')
+        UrlCache.create!(:url => @resource.url, :content => (@cached_content = 'Cached Content'),
+                         :fetched_at => Time.now)
+        @resource.instance_variable_set('@modified_date', nil)
+        @resource.content
+      end
+
+      it_should_behave_like "an url is fetched and the cache updated"
+    end
+    
+    describe "not in cache" do
+      before do
+        Utilities.should_receive(:get_content_from_url).with(@resource.url).and_return(@url_content = 'URL content')
+        @resource.content # get the lazy loading content from the url
+      end
+
+      it_should_behave_like "an url is fetched and the cache updated"
     end
   end
 
@@ -54,7 +111,8 @@ describe Resource do
          nil,
          'Content',
          nil,
-         @project
+         @project,
+         @user
       )
     end
 
