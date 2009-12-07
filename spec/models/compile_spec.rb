@@ -12,6 +12,10 @@ describe Compile do
           <compile>
             <token>#{@user.token}</token>
             <name>MyProject</name>
+            <options>
+              <compiler>latex</compiler>
+              <output-format>ps</output-format>
+            </options>
             <resources root-resource-path="chapters/main.tex">
               <resource path="chapters/main.tex" modified="2009-03-29T06:00Z">Hello TeX.</resource>
               <resource path="chapters/chapter1.tex" modified="2009-03-29" url="http://www.latexlab.org/getfile/bsoares/23234543543"/>
@@ -25,6 +29,8 @@ describe Compile do
         @compile.project.user.should eql @user
         @compile.project.unique_id.should_not be_blank
         @compile.root_resource_path.should eql 'chapters/main.tex'
+        @compile.compiler.should eql 'latex'
+        @compile.output_format.should eql 'ps'
  
         @compile.resources[0].should be_a(Resource)
         @compile.resources[0].path.should eql 'chapters/main.tex'
@@ -88,6 +94,41 @@ describe Compile do
           EOS
           )
         }.should raise_error(CLSI::InvalidToken, 'user does not exist')
+      end
+    end
+    
+    describe "with an unknown compiler" do
+      it "should raise a CLSI::UnknownCompiler error" do
+        lambda{
+          @compile = Compile.new_from_request(<<-EOS
+            <compile>
+              <token>#{@user.token}</token>
+              <options>
+                <compiler>gcc</compiler>
+              </options>
+              <resources></resources>
+            </compile>
+          EOS
+          )
+        }.should raise_error(CLSI::UnknownCompiler, 'gcc is not a valid compiler')
+      end
+    end
+
+    describe "with an impossible output format" do
+      it "should raise a CLSI::ImpossibleOutputFormat error" do
+        lambda{
+          @compile = Compile.new_from_request(<<-EOS
+            <compile>
+              <token>#{@user.token}</token>
+              <options>
+                <compiler>pdflatex</compiler>
+                <output-format>dvi</output-format>
+              </options>
+              <resources></resources>
+            </compile>
+          EOS
+          )
+        }.should raise_error(CLSI::ImpossibleOutputFormat, 'pdflatex cannot produce dvi output')
       end
     end
   end

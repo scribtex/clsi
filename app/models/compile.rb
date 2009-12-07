@@ -3,6 +3,11 @@ require 'rexml/document'
 class Compile
   attr_accessor :user, :project, :root_resource_path, :resources, :status, :return_files, :compiler, :output_format
 
+  POSSIBLE_COMPILER_OUTPUT_FORMATS = {
+    :pdflatex => ['pdf'],
+    :latex    => ['dvi', 'pdf', 'ps']
+  }
+
   def compiler 
     @compiler ||= 'pdflatex'
   end
@@ -41,6 +46,18 @@ class Compile
       @project = Project.find(:first, :conditions => {:name => project_name, :user_id => @user.id})
       @project ||= Project.create!(:name => project_name, :user => @user)
     end
+    
+    options = request[:options] || {}
+    @compiler = options[:compiler] || 'pdflatex'
+    @output_format = options[:output_format] || 'pdf'
+    
+    unless POSSIBLE_COMPILER_OUTPUT_FORMATS.has_key?(@compiler.to_sym)
+      raise CLSI::UnknownCompiler, "#{@compiler} is not a valid compiler"
+    end
+    
+    unless POSSIBLE_COMPILER_OUTPUT_FORMATS[@compiler.to_sym].include?(@output_format)
+      raise CLSI::ImpossibleOutputFormat, "#{@compiler} cannot produce #{@output_format} output"
+    end
 
     @resources = []
     for resource in request[:resources]
@@ -75,6 +92,16 @@ class Compile
 
       name_tag = compile_tag.elements['name']
       request[:name] = name_tag.nil? ? nil : name_tag.text
+      
+      
+      request[:options] = {}
+      options_tag = compile_tag.elements['options']
+      unless options_tag.nil?
+        compiler_tag = options_tag.elements['compiler']
+        request[:options][:compiler] = compiler_tag.text unless compiler_tag.nil?
+        output_format_tag = options_tag.elements['output-format']
+        request[:options][:output_format] = output_format_tag.text unless output_format_tag.nil?
+      end
 
       resources_tag = compile_tag.elements['resources']
       raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?
