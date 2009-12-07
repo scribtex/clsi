@@ -55,63 +55,63 @@ class Compile
     end
   end
 
-  # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
-  # and return a hash containing the parsed data.
-  def parse_request(xml_request)
-    request = {}
+    # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
+    # and return a hash containing the parsed data.
+    def parse_request(xml_request)
+      request = {}
 
-    begin
-      compile_request = REXML::Document.new xml_request
-    rescue REXML::ParseException
-      raise CLSI::ParseError, 'malformed XML'
-    end
-
-    compile_tag = compile_request.elements['compile']
-    raise CLSI::ParseError, 'no <compile> ... </> tag found' if compile_tag.nil?
-
-    token_tag = compile_tag.elements['token']
-    raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
-    request[:token] = token_tag.text
-    
-    name_tag = compile_tag.elements['name']
-    request[:name] = name_tag.nil? ? nil : name_tag.text
-
-    resources_tag = compile_tag.elements['resources']
-    raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?
-    
-    request[:root_resource_path] = resources_tag.attributes['root-resource-path']
-    request[:root_resource_path] ||= 'main.tex'
-
-    request[:resources] = []
-    for resource_tag in resources_tag.elements.to_a
-      raise CLSI::ParseError, "unknown tag: #{resource_tag.name}" unless resource_tag.name == 'resource'
-
-      path = resource_tag.attributes['path']
-      raise CLSI::ParseError, 'no path attribute found' if path.nil?
-
-      modified_date_text = resource_tag.attributes['modified']
       begin
-        modified_date = modified_date_text.nil? ? nil : DateTime.parse(modified_date_text)
-      rescue ArgumentError
-        raise CLSI::ParseError, 'malformed date'
+        compile_request = REXML::Document.new xml_request
+      rescue REXML::ParseException
+        raise CLSI::ParseError, 'malformed XML'
       end
 
-      url = resource_tag.attributes['url']
-      content = resource_tag.text
-      if url.blank? and content.blank?
-        raise CLSI::ParseError, 'must supply either content or an URL'
+      compile_tag = compile_request.elements['compile']
+      raise CLSI::ParseError, 'no <compile> ... </> tag found' if compile_tag.nil?
+
+      token_tag = compile_tag.elements['token']
+      raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
+      request[:token] = token_tag.text
+
+      name_tag = compile_tag.elements['name']
+      request[:name] = name_tag.nil? ? nil : name_tag.text
+
+      resources_tag = compile_tag.elements['resources']
+      raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?
+
+      request[:root_resource_path] = resources_tag.attributes['root-resource-path']
+      request[:root_resource_path] ||= 'main.tex'
+
+      request[:resources] = []
+      for resource_tag in resources_tag.elements.to_a
+        raise CLSI::ParseError, "unknown tag: #{resource_tag.name}" unless resource_tag.name == 'resource'
+
+        path = resource_tag.attributes['path']
+        raise CLSI::ParseError, 'no path attribute found' if path.nil?
+
+        modified_date_text = resource_tag.attributes['modified']
+        begin
+          modified_date = modified_date_text.nil? ? nil : DateTime.parse(modified_date_text)
+        rescue ArgumentError
+          raise CLSI::ParseError, 'malformed date'
+        end
+
+        url = resource_tag.attributes['url']
+        content = resource_tag.text
+        if url.blank? and content.blank?
+          raise CLSI::ParseError, 'must supply either content or an URL'
+        end
+
+        request[:resources] << {
+          :path          => path,
+          :modified_date => modified_date,
+          :url           => url,
+          :content       => content
+        }
       end
 
-      request[:resources] << {
-        :path          => path,
-        :modified_date => modified_date,
-        :url           => url,
-        :content       => content
-      }
+      return request
     end
-
-    return request
-  end
 
   def compile
     write_resources_to_disk
@@ -121,6 +121,8 @@ class Compile
   ensure
     move_log_files_to_public_dir
   end
+
+private
 
   def write_resources_to_disk
     for resource in self.resources.to_a
@@ -132,10 +134,10 @@ class Compile
     bibtex_command = "#{tex_env_variables} #{BIBTEX_COMMAND} " +
                      "#{self.root_resource_path} &> /dev/null"
 
-    system(compile_command)
-    system(compile_command)
-    system(bibtex_command)
-    system(compile_command)
+    run_with_timeout(compile_command)
+    run_with_timeout(compile_command)
+    run_with_timeout(bibtex_command)
+    run_with_timeout(compile_command)
   end
   
   def convert_to_output_format
@@ -147,7 +149,7 @@ class Compile
     end
     ensure_output_files_exist(input_format)
     conversion_method = "convert_#{input_format}_to_#{self.output_format}"
-    if self.respond_to?(conversion_method)
+    if self.respond_to?(conversion_method, true)
       self.send(conversion_method)
     else
       raise CLSI::ImpossibleFormatConversion, "can't convert #{input_format} to #{self.output_format}"
@@ -202,7 +204,7 @@ class Compile
       raise NotImplemented
     end
     return "#{tex_env_variables} #{command} -interaction=batchmode " + 
-           "-output-directory=\"#{compile_directory}\" -no-shell-escape " + 
+           "-output-directory=\"#{compile_directory_rel_to_chroot}\" -no-shell-escape " + 
            "-jobname=output #{self.root_resource_path} &> /dev/null"
   end
   
@@ -227,7 +229,14 @@ class Compile
     # Nothing to do!    
   end
   
-  def run_command_with_timeout(command)
+  def convert_dvi_to_pdf
+    input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
+    output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
+    dvipdf_command = "#{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    run_with_timeout(dvipdf_command)
+  end
+  
+  def run_with_timeout(command)
     system(command)
   end
 end

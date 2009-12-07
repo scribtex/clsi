@@ -1,0 +1,6 @@
+latexchroot
+db/*.sqlite3
+log
+public/output
+test
+chrooted*

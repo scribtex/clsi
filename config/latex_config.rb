@@ -14,3 +14,4 @@ WILDCARD_FS_DIR = WILDCARD_FS_DIR_RELATIVE_TO_CHROOT
 PDFLATEX_COMMAND = '/usr/texbin/pdflatex'
 LATEX_COMMAND = '/usr/texbin/latex'
 BIBTEX_COMMAND = '/usr/texbin/bibtex'
+DVIPDF_COMMAND = '/usr/texbin/dvipdfmx'

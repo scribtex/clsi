@@ -158,6 +158,18 @@ describe Compile do
       it_should_behave_like 'an output format of dvi'
       it_should_behave_like 'a successful compile'
     end
+    
+    describe 'with latex compiled and output format of pdf' do
+      before do
+        @compile.compiler = 'latex'
+        @compile.output_format = 'pdf'
+        @compile.compile
+      end
+
+      it_should_behave_like 'an output format of pdf'
+      it_should_behave_like 'a successful compile'
+      
+    end
 
     after(:all) do
       FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
