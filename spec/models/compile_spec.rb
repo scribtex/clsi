@@ -130,6 +130,14 @@ describe Compile do
         File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
     end
+
+    shared_examples_for 'an output format of ps' do
+      it "should return the PostScript file for access by the client" do
+        rel_path = File.join('output', @project.unique_id, 'output.ps')
+        @compile.return_files.should include(rel_path)
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+      end
+    end
     
     shared_examples_for 'a successful compile' do
       it "should return the log for access by the client" do
@@ -168,7 +176,17 @@ describe Compile do
 
       it_should_behave_like 'an output format of pdf'
       it_should_behave_like 'a successful compile'
-      
+    end
+
+    describe 'with latex compiled and output format of ps' do
+      before do
+        @compile.compiler = 'latex'
+        @compile.output_format = 'ps'
+        @compile.compile
+      end
+
+      it_should_behave_like 'an output format of ps'
+      it_should_behave_like 'a successful compile'
     end
 
     after(:all) do

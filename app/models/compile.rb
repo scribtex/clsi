@@ -236,6 +236,13 @@ private
     run_with_timeout(dvipdf_command)
   end
   
+  def convert_dvi_to_ps
+    input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
+    output = File.join(compile_directory_rel_to_chroot, 'output.ps')
+    dvips_command = "#{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    run_with_timeout(dvips_command)
+  end
+  
   def run_with_timeout(command)
     system(command)
   end
