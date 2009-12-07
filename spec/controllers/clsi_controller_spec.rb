@@ -18,7 +18,8 @@ describe ClsiController do
       @compile.stub!(:status).and_return(:success)
       @compile.stub!(:return_files).and_return(['output/output.pdf', 'output/output.log'])
       Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      result = get :compile, :request => 'request_xml'
+      @request.env['RAW_POST_DATA'] = 'request_xml'
+      result = post :compile
       result = response.body
       
       parser = REXML::Document.new result
@@ -43,7 +44,8 @@ describe ClsiController do
       @compile.stub!(:return_files).and_return(['output/output.log'])
 
       Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      get :compile, :request => 'request_xml'
+      @request.env['RAW_POST_DATA'] = 'request_xml'
+      result = post :compile
       result = response.body
       
       parser = REXML::Document.new result
@@ -59,7 +61,8 @@ describe ClsiController do
     it "should return an error message for an unsuccessful compile" do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
       Compile.should_receive('new_from_request').with('bad_xml').and_raise(CLSI::ParseError.new('malformed XML'))
-      get :compile, :request => 'bad_xml'
+      @request.env['RAW_POST_DATA'] = 'bad_xml'
+      result = post :compile
       result = response.body
       
       parser = REXML::Document.new result

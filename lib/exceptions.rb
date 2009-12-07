@@ -8,4 +8,5 @@ module CLSI
   class CompileError < RuntimeError; end
   class NoOutputProduced < CompileError; end
   class ImpossibleFormatConversion < CompileError; end
+  class Timeout < CompileError; end
 end

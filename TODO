@@ -1,7 +1,9 @@
-* Check whether output format is possible for the given compiler
-
 Enhancements:
 * Different compiles/output formats
+** pdflatex - png, ps
+** latex - png
+** xetex - xdv, ps, pdf, png
+** htlatex - html 
 
 Self admin:
 * Token duration/expiry

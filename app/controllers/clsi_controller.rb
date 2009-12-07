@@ -5,7 +5,7 @@ class ClsiController < ApplicationController
   end
 
   def compile
-    xml_request = params[:request]
+    xml_request = request.env['RAW_POST_DATA']
     xml = Builder::XmlMarkup.new(:indent => 4)
     xml.instruct!
 
@@ -18,13 +18,12 @@ class ClsiController < ApplicationController
       return
     end
     
-    
     render :xml => (xml.compile do
       begin
         @compile.compile
         xml.status('success')
-      rescue CLSI::CompileError
-        xml.status('compile failed')
+      rescue CLSI::CompileError => e
+        xml.status('compile failed', :reason => e.message)
       end
       xml.name(@compile.project.name)
       xml.output do

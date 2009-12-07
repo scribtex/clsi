@@ -16,3 +16,14 @@ LATEX_COMMAND = '/usr/texbin/latex'
 BIBTEX_COMMAND = '/usr/texbin/bibtex'
 DVIPDF_COMMAND = '/usr/texbin/dvipdfmx'
 DVIPS_COMMAND = '/usr/texbin/dvips'
+
+# These determine how long each command is allowed to run before 
+# being forcefully terminated. These should be sensible defaults.
+# COMPILE_TIMEOUT is the maximum time in seconds that each pass 
+# of latex, pdflatex, etc. will take.
+# The others determine each command individually.
+COMPILE_TIMEOUT = 10 
+BIBTEX_TIMEOUT = 10
+DVIPDF_TIMEOUT = 10
+DVIPS_TIMEOUT = 10
+

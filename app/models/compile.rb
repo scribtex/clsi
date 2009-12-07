@@ -161,10 +161,10 @@ private
     bibtex_command = "#{tex_env_variables} #{BIBTEX_COMMAND} " +
                      "#{self.root_resource_path} &> /dev/null"
 
-    run_with_timeout(compile_command)
-    run_with_timeout(compile_command)
-    run_with_timeout(bibtex_command)
-    run_with_timeout(compile_command)
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    run_with_timeout(bibtex_command, BIBTEX_TIMEOUT)
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
   end
   
   def convert_to_output_format
@@ -260,17 +260,40 @@ private
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
     dvipdf_command = "#{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
-    run_with_timeout(dvipdf_command)
+    run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
   end
   
   def convert_dvi_to_ps
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.ps')
     dvips_command = "#{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
-    run_with_timeout(dvips_command)
+    run_with_timeout(dvips_command, DVIPS_TIMEOUT)
   end
   
-  def run_with_timeout(command)
-    system(command)
+  # Everything below here is copied from the mathwiki code. It was ugly when
+  # I first wrote it and it hasn't improved with time. Fixing it would be good.
+  def run_with_timeout(command, timeout = 10)
+    start_time = Time.now
+    pid = fork {
+      exec(*command)
+    }
+    while Time.now - start_time < timeout
+      if Process.waitpid(pid, Process::WNOHANG)
+        return pid
+      end
+      sleep 0.2 # No need to check too often
+    end
+    
+    # Process never finished
+    kill_process(pid)
+    raise CLSI::Timeout, "the compile took too long to run and was aborted"
+  end
+  
+  def kill_process(pid)
+    child_pids = %x[ps -e -o 'ppid pid' | awk '$1 == #{pid} { print $2 }'].split
+    child_pids.collect{|cpid| kill_process(cpid.to_i)}
+    Process.kill('INT', pid)
+    Process.kill('HUP', pid)
+    Process.kill('KILL', pid)
   end
 end

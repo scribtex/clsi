@@ -268,7 +268,11 @@ describe Compile do
 
   describe "timedout compile" do
     it "should timeout" do
-      pending 'Compile timeouts'
+      @compile = Compile.new
+      lambda {
+        @compile.send('run_with_timeout', "sh " + File.expand_path(RAILS_ROOT + '/spec/sleep.sh'), 0.1) 
+      }.should raise_error CLSI::Timeout
+      %x[ps -a -x].should_not include('/bin/sleep') # lets hope no one else has sleep running!
     end
   end
 end
