@@ -5,10 +5,11 @@ Enhancements:
 ** xetex - xdv, ps, pdf, png
 ** htlatex - html 
 
+* JSON input/output
+
 Self admin:
 * Token duration/expiry
 * Project expiry - projects currently sit forever
 
 Security:
-* Compile timeouts
 * URL Download size limits
