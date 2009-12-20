@@ -28,18 +28,18 @@ describe ClsiController do
 
       file1 = parser.elements['compile'].elements['output'].elements[1]
       file1.name.should eql 'file'
-      file1.attributes['type'].should eql 'pdf'
+      file1.attributes['type'].should eql 'application/pdf'
       file1.attributes['url'].should eql 'output/output.pdf'
 
       file2 = parser.elements['compile'].elements['output'].elements[2]
       file2.name.should eql 'file'
-      file2.attributes['type'].should eql 'log'
+      file2.attributes['type'].should eql 'text/plain'
       file2.attributes['url'].should eql 'output/output.log'
     end
 
     it "should return the log file for an unsuccessful compile" do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
-      @compile.stub!(:compile).and_raise(CLSI::CompileError)
+      @compile.stub!(:compile).and_raise(CLSI::NoOutputProduced.new('no compiled documents were produced'))
       @compile.stub!(:status).and_return(:failed)
       @compile.stub!(:return_files).and_return(['output/output.log'])
 
@@ -49,12 +49,14 @@ describe ClsiController do
       result = response.body
       
       parser = REXML::Document.new result
-      parser.elements['compile'].elements['status'].text.should eql 'compile failed'
+      parser.elements['compile'].elements['status'].text.should eql 'failure'
+      parser.elements['compile'].elements['error'].text.should eql 'NoOutputProduced'
+      parser.elements['compile'].elements['error'].attributes['message'].should eql 'no compiled documents were produced'
       parser.elements['compile'].elements['name'].text.should eql 'My Project'
 
       file = parser.elements['compile'].elements['output'].elements[1]
       file.name.should eql 'file'
-      file.attributes['type'].should eql 'log'
+      file.attributes['type'].should eql 'text/plain'
       file.attributes['url'].should eql 'output/output.log'
     end
 
@@ -66,9 +68,9 @@ describe ClsiController do
       result = response.body
       
       parser = REXML::Document.new result
-      #raise result
-      parser.elements['compile'].elements['status'].text.should eql 'failed parse'
-      parser.elements['compile'].elements['status'].attributes['reason'].should eql 'malformed XML'
+      parser.elements['compile'].elements['status'].text.should eql 'failure'
+      parser.elements['compile'].elements['error'].text.should eql 'ParseError'
+      parser.elements['compile'].elements['error'].attributes['message'].should eql 'malformed XML'
     end
   end
 end
