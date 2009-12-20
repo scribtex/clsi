@@ -29,12 +29,12 @@ describe ClsiController do
       file1 = parser.elements['compile'].elements['output'].elements[1]
       file1.name.should eql 'file'
       file1.attributes['type'].should eql 'application/pdf'
-      file1.attributes['url'].should eql 'output/output.pdf'
+      file1.attributes['url'].should eql 'http://test.host/output/output.pdf'
 
       file2 = parser.elements['compile'].elements['output'].elements[2]
       file2.name.should eql 'file'
       file2.attributes['type'].should eql 'text/plain'
-      file2.attributes['url'].should eql 'output/output.log'
+      file2.attributes['url'].should eql 'http://test.host/output/output.log'
     end
 
     it "should return the log file for an unsuccessful compile" do
@@ -57,7 +57,7 @@ describe ClsiController do
       file = parser.elements['compile'].elements['output'].elements[1]
       file.name.should eql 'file'
       file.attributes['type'].should eql 'text/plain'
-      file.attributes['url'].should eql 'output/output.log'
+      file.attributes['url'].should eql 'http://test.host/output/output.log'
     end
 
     it "should return an error message for an unsuccessful compile" do

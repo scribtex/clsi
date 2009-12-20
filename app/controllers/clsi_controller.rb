@@ -33,7 +33,7 @@ class ClsiController < ApplicationController
       xml.output do
         for file_url in @compile.return_files
           type = media_type_from_name(file_url)
-          xml.file(:url => file_url, :type => type)
+          xml.file(:url => File.join('http://', request.host_with_port, file_url), :type => type)
         end
       end
     end)  
