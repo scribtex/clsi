@@ -1,32 +1,29 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Compile do
-  before(:each) do
-    @compile = Compile.new
-  end
+describe XMLParser do
 
-  describe "parse_request" do
+  describe "bad XML" do
     it "should raise a CLSI::ParseError with malformed XML" do
       lambda{
-        @compile.parse_request('<blah')
+        XMLParser.request_to_compile('<blah')
       }.should raise_error(CLSI::ParseError, 'malformed XML')
     end
 
     it "should raise a CLSI::ParseError if there is no compile tag" do
       lambda{
-        @compile.parse_request('<nopile></nopile>')
+        XMLParser.request_to_compile('<nopile></nopile>')
       }.should raise_error(CLSI::ParseError, 'no <compile> ... </> tag found')      
     end
 
     it "should raise a CLSI::ParseError if there is no token tag" do
       lambda{
-        @compile.parse_request('<compile></compile>')
+        XMLParser.request_to_compile('<compile></compile>')
       }.should raise_error(CLSI::ParseError, 'no <token> ... </> tag found')      
     end
 
     it "should raise a CLSI::ParseError if there is no resources tag" do
       lambda{
-        @compile.parse_request(<<-EOS
+        XMLParser.request_to_compile(<<-EOS
           <compile>
             <token>abcdefghijklmno</token>
           </compile>
@@ -37,7 +34,7 @@ describe Compile do
 
     it "should raise a CLSI::ParseError if there is a non resource tag in resources" do
       lambda{
-        @compile.parse_request(<<-EOS
+        XMLParser.request_to_compile(<<-EOS
           <compile>
             <token>abcdefghijklmno</token>
             <resources>
@@ -51,7 +48,7 @@ describe Compile do
 
     it "should raise a CLSI::ParseError if there is no path attribute for a resource" do
       lambda{
-        @compile.parse_request(<<-EOS
+        XMLParser.request_to_compile(<<-EOS
           <compile>
             <token>abcdefghijklmno</token>
             <resources>
@@ -65,7 +62,7 @@ describe Compile do
 
     it "should raise a CLSI::ParseError if there is a malformed date" do
       lambda{
-        @compile.parse_request(<<-EOS
+        XMLParser.request_to_compile(<<-EOS
           <compile>
             <token>abcdefghijklmno</token>
             <resources>
@@ -76,73 +73,112 @@ describe Compile do
         )
       }.should raise_error(CLSI::ParseError, 'malformed date')      
     end
+  end
 
-    it "should raise a CLSI::ParseError if there is no content for a resource" do
-      lambda{
-        @compile.parse_request(<<-EOS
-          <compile>
-            <token>abcdefghijklmno</token>
-            <resources>
-              <resource path="main.tex" />
-            </resources>
-          </compile>
-        EOS
-        )
-      }.should raise_error(CLSI::ParseError, 'must supply either content or an URL')      
-    end
-
-    it "should set the root resource path to 'main.tex' if none is supplied" do
-      request = @compile.parse_request(<<-EOS
-        <compile>
-          <token>abcdefghijklmno</token>
-          <resources></resources>
-        </compile>
-      EOS
+  describe 'good XML' do
+    it 'should set the token' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :token => @token = generate_unique_string
+        ).to_xml
       )
-      request[:root_resource_path].should eql 'main.tex'
+      @compile.token.should eql @token
     end
-
-    it "should return a hash containg the request data" do
-      request = @compile.parse_request(<<-EOS
-        <compile>
-          <token>AdWn34899sKd03S</token>
-          <name>MyProject</name>
-          <resources root-resource-path="chapters/main.tex">
-            <resource path="chapters/main.tex" modified="2009-03-29T06:00Z">Hello TeX.</resource>
-            <resource path="chapters/chapter1.tex" modified="2009-03-29" url="http://www.latexlab.org/getfile/bsoares/23234543543"/>
-            <resource path="other/styles/main.sty" modified="2009-03-29">main.sty content</resource>
-            <resource path="other/diagrams/diagram1.eps" modified="2009-01-15" url="http://www.latexlab.org/getfile/bsoares/23234543543" />
-          </resources>
-        </compile>
-      EOS
+    
+    it 'should set the name' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :name => @name = 'Compile Name'
+        ).to_xml
       )
-      request[:token].should eql 'AdWn34899sKd03S'
-      request[:name].should eql 'MyProject'
-      request[:root_resource_path].should eql 'chapters/main.tex'
-      request[:resources].should include({
-        :path          => 'chapters/main.tex',
-        :modified_date => DateTime.parse('2009-03-29T06:00Z'),
-        :url           => nil,
-        :content       => 'Hello TeX.'
-      })
-      request[:resources].should include({
-        :path          => 'chapters/chapter1.tex',
-        :modified_date => DateTime.parse('2009-03-29'),
-        :url           => 'http://www.latexlab.org/getfile/bsoares/23234543543',
-        :content       => nil
-      })
-      request[:resources].should include({
-        :path          => 'other/styles/main.sty',
-        :modified_date => DateTime.parse('2009-03-29'),
-        :url           => nil,
-        :content       => 'main.sty content'
-      })
-      request[:resources].should include({
-        :path          => 'other/diagrams/diagram1.eps',
-        :modified_date => DateTime.parse('2009-01-15'),
-        :url           => 'http://www.latexlab.org/getfile/bsoares/23234543543',
-        :content       => nil
-      })
+      @compile.name.should eql @name
+    end
+    
+    it "should not set the name if it isn't supplied" do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.to_xml
+      )
+      @compile.name.should be_blank
+    end
+    
+    it 'should set the compiler' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :compiler => @compiler = 'xetex'
+        ).to_xml
+      )
+      @compile.compiler.should eql @compiler
+    end
+    
+    it 'should set the output format' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :compiler => @compiler = 'xetex'
+        ).to_xml
+      )
+      @compile.compiler.should eql @compiler
+    end
+    
+    it 'should set the root resource path' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :root_resource_path => @rrp = 'book.tex'
+        ).to_xml
+      )
+      @compile.root_resource_path.should eql 'book.tex'
+    end
+    
+    it 'should load all resources' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :resources => [
+            @resource1 = {
+              :path     => 'book.tex',
+              :content  => 'content of book',
+            },
+            @resource2 = {
+              :path     => 'chapter1.tex',
+              :url      => 'http://www.example.com/chapter1.tex',
+              :modified => DateTime.now
+            }
+          ]
+        ).to_xml
+      )
+      @compile.resources[0].path.should eql @resource1[:path]
+      @compile.resources[0].content.should eql @resource1[:content]
+      @compile.resources[0].modified_date.should be_blank
+      
+      @compile.resources[1].path.should eql @resource2[:path]
+      @compile.resources[1].url.should eql @resource2[:url]
+      @compile.resources[1].modified_date.to_s.should eql @resource2[:modified].to_s
+    end
+    
+    it 'should read content without CDATA tags' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :resources => [
+            @resource = {
+              :path     => 'book.tex',
+              :content  => 'content of book',
+            }
+          ]
+        ).to_xml(:with_cdata_tags => false)
+      )
+      @compile.resources.first.content.should eql @resource[:content]
+    end
+    
+    it 'should read content with CDATA tags' do
+      @compile = XMLParser.request_to_compile(
+        CLSIRequest.valid_request.merge(
+          :resources => [
+            @resource = {
+              :path     => 'book.tex',
+              :content  => 'content of book',
+            }
+          ]
+        ).to_xml(:with_cdata_tags => true)
+      )
+      @compile.resources.first.content.should eql @resource[:content]
     end
   end
 end

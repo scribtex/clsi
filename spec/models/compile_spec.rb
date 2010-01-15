@@ -1,135 +1,51 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Compile do
-  describe "new_from_request" do
+  describe "validate_compile" do
     before(:each) do
       @user = User.create!
+      @compile = Compile.new(:token => @user.token)
     end
 
-    describe "with valid request" do
-      it "should load the information about the compile" do
-        @compile = Compile.new_from_request(<<-EOS
-          <compile>
-            <token>#{@user.token}</token>
-            <name>MyProject</name>
-            <options>
-              <compiler>latex</compiler>
-              <output-format>ps</output-format>
-            </options>
-            <resources root-resource-path="chapters/main.tex">
-              <resource path="chapters/main.tex" modified="2009-03-29T06:00Z">Hello TeX.</resource>
-              <resource path="chapters/chapter1.tex" modified="2009-03-29" url="http://www.latexlab.org/getfile/bsoares/23234543543"/>
-            </resources>
-          </compile>
-        EOS
-        )
-
-        @compile.user.should eql @user
-        @compile.project.name.should eql 'MyProject'
-        @compile.project.user.should eql @user
-        @compile.project.unique_id.should_not be_blank
-        @compile.root_resource_path.should eql 'chapters/main.tex'
-        @compile.compiler.should eql 'latex'
-        @compile.output_format.should eql 'ps'
- 
-        @compile.resources[0].should be_a(Resource)
-        @compile.resources[0].path.should eql 'chapters/main.tex'
-        @compile.resources[0].modified_date.should eql DateTime.parse('2009-03-29T06:00Z')
-        @compile.resources[0].content.should eql 'Hello TeX.'
- 
-        @compile.resources[1].should be_a(Resource)
-        @compile.resources[1].path.should eql 'chapters/chapter1.tex'
-        @compile.resources[1].modified_date.should eql DateTime.parse('2009-03-29')
-        @compile.resources[1].url.should eql 'http://www.latexlab.org/getfile/bsoares/23234543543'
-      end
-
-      it "should create a project with a random name if none is supplied" do
-        @compile = Compile.new_from_request(<<-EOS
-          <compile>
-            <token>#{@user.token}</token>
-            <resources></resources>
-          </compile>
-        EOS
-        )
-
-        @compile.project.name.should_not be_blank
-      end
-
-      it "should find an existing project if the name is already in use by the user" do
-        @project = Project.create!(:name => 'Existing Project', :user => @user)
-        @compile = Compile.new_from_request(<<-EOS
-          <compile>
-            <token>#{@user.token}</token>
-            <name>Existing Project</name>
-            <resources></resources>
-          </compile>
-        EOS
-        )
-        @compile.project.should eql(@project)
-      end
-
-      it "should create a new project if the name is already in use but by a different user" do
-        @another_user = User.create!
-        @project = Project.create!(:name => 'Existing Project', :user => @another_user)
-        @compile = Compile.new_from_request(<<-EOS
-          <compile>
-            <token>#{@user.token}</token>
-            <name>Existing Project</name>
-            <resources></resources>
-          </compile>
-        EOS
-        )
-        @compile.project.should_not eql(@project)
-      end
+    it "should create a project with a random name if none is supplied" do
+      @compile.validate_compile
+      @compile.project.name.should_not be_blank
     end
 
-    describe "with invalid token" do
-      it "should raise a CLSI::InvalidToken error" do
-        lambda{
-          @compile = Compile.new_from_request(<<-EOS
-            <compile>
-              <token>#{Digest::MD5.hexdigest('blah')}</token>
-              <resources></resources>
-            </compile>
-          EOS
-          )
-        }.should raise_error(CLSI::InvalidToken, 'user does not exist')
-      end
+    it "should find an existing project if the name is already in use by the user" do
+      @project = Project.create!(:name => 'Existing Project', :user => @user)
+      @compile.name = @project.name
+      @compile.validate_compile
+      @compile.project.should eql(@project)
+    end
+
+    it "should create a new project if the name is already in use but by a different user" do
+      @another_user = User.create!
+      @project = Project.create!(:name => 'Existing Project', :user => @another_user)
+      @compile.validate_compile
+      @compile.project.should_not eql(@project)
+    end
+
+    it "should raise a CLSI::InvalidToken error if it's token doesn't correspond to a user" do
+      @compile.token = Digest::MD5.hexdigest('blah')
+      lambda{
+        @compile.validate_compile
+      }.should raise_error(CLSI::InvalidToken, 'user does not exist')
     end
     
-    describe "with an unknown compiler" do
-      it "should raise a CLSI::UnknownCompiler error" do
-        lambda{
-          @compile = Compile.new_from_request(<<-EOS
-            <compile>
-              <token>#{@user.token}</token>
-              <options>
-                <compiler>gcc</compiler>
-              </options>
-              <resources></resources>
-            </compile>
-          EOS
-          )
-        }.should raise_error(CLSI::UnknownCompiler, 'gcc is not a valid compiler')
-      end
+    it "should raise a CLSI::UnknownCompiler error if it has an unknown compiler" do
+      @compile.compiler = 'gcc'
+      lambda{
+        @compile.validate_compile
+      }.should raise_error(CLSI::UnknownCompiler, 'gcc is not a valid compiler')
     end
 
-    describe "with an impossible output format" do
-      it "should raise a CLSI::ImpossibleOutputFormat error" do
-        lambda{
-          @compile = Compile.new_from_request(<<-EOS
-            <compile>
-              <token>#{@user.token}</token>
-              <options>
-                <compiler>pdflatex</compiler>
-                <output-format>dvi</output-format>
-              </options>
-              <resources></resources>
-            </compile>
-          EOS
-          )
-        }.should raise_error(CLSI::ImpossibleOutputFormat, 'pdflatex cannot produce dvi output')
-      end
+    it "should raise a CLSI::ImpossibleOutputFormat error" do
+      @compile.compiler = 'pdflatex'
+      @compile.output_format = 'avi'
+      lambda{
+        @compile.validate_compile
+      }.should raise_error(CLSI::ImpossibleOutputFormat, 'pdflatex cannot produce avi output')
     end
   end
 
@@ -186,6 +102,11 @@ describe Compile do
         @compile.return_files.should include(rel_log_path)
         File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
       end
+    end
+    
+    it 'should validate the compile' do
+      @compile.should_receive(:validate_compile)
+      @compile.compile
     end
     
     describe 'with pdflatex compiler and output format of pdf' do

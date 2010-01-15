@@ -31,7 +31,7 @@ describe Resource do
     end
   end
 
-  describe "with an URL for content" do
+  describe "with an URL" do
     before(:each) do
       @begin_test_time = Time.now
       @resource = Resource.new(
@@ -44,7 +44,7 @@ describe Resource do
       )
     end
     
-    describe "already in cache" do
+    describe "already in the cache" do
       before do
         UrlCache.create!(:url => @resource.url, :content => (@cached_content = 'Cached Content'),
                          :fetched_at => (@resource.modified_date + 1.day))
@@ -82,7 +82,7 @@ describe Resource do
       it_should_behave_like "an url is fetched and the cache updated"
     end
     
-    describe "already in cache when resource has no modified date" do
+    describe "already in the cache when the resource has no modified date" do
       before do
         Utilities.should_receive(:get_content_from_url).with(@resource.url).and_return(@url_content = 'URL content')
         UrlCache.create!(:url => @resource.url, :content => (@cached_content = 'Cached Content'),
@@ -94,7 +94,7 @@ describe Resource do
       it_should_behave_like "an url is fetched and the cache updated"
     end
     
-    describe "not in cache" do
+    describe "not in the cache" do
       before do
         Utilities.should_receive(:get_content_from_url).with(@resource.url).and_return(@url_content = 'URL content')
         @resource.content # get the lazy loading content from the url

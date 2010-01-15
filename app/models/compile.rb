@@ -1,7 +1,9 @@
 require 'rexml/document'
 
 class Compile
-  attr_accessor :user, :project, :root_resource_path, :resources, :status, :return_files, :compiler, :output_format
+  attr_accessor :token, :user, :name, :project, 
+                :root_resource_path, :resources, 
+                :return_files, :compiler, :output_format
 
   POSSIBLE_COMPILER_OUTPUT_FORMATS = {
     :pdflatex => ['pdf'],
@@ -16,137 +18,45 @@ class Compile
     @output_format ||= 'pdf'
   end
 
-  def initialize
-    @status = :not_started
+  def initialize(attributes = {})
+    for attribute_name, value in attributes
+      self.send("#{attribute_name}=", value)
+    end
     @return_files = []
   end
 
-  # Create a new Compile instance and load it with the information from the
-  # request.
-  def self.new_from_request(xml_request)
-    compile = Compile.new
-    compile.load_request(xml_request)
-    return compile
-  end
-
-  # Extract all the information for the compile from the request
-  def load_request(xml_request)
-    request = parse_request(xml_request)
-
-    @root_resource_path = request[:root_resource_path]
-    
-    token = request[:token]
-    @user = User.find_by_token(token)
-    raise CLSI::InvalidToken, 'user does not exist' if @user.nil?
-
-    project_name = request[:name]
-    if project_name.blank?
-      @project = Project.create!(:name => generate_unique_string, :user => @user)
-    else
-      @project = Project.find(:first, :conditions => {:name => project_name, :user_id => @user.id})
-      @project ||= Project.create!(:name => project_name, :user => @user)
-    end
-    
-    options = request[:options] || {}
-    @compiler = options[:compiler] || 'pdflatex'
-    @output_format = options[:output_format] || 'pdf'
-    
-    unless POSSIBLE_COMPILER_OUTPUT_FORMATS.has_key?(@compiler.to_sym)
-      raise CLSI::UnknownCompiler, "#{@compiler} is not a valid compiler"
-    end
-    
-    unless POSSIBLE_COMPILER_OUTPUT_FORMATS[@compiler.to_sym].include?(@output_format)
-      raise CLSI::ImpossibleOutputFormat, "#{@compiler} cannot produce #{@output_format} output"
-    end
-
-    @resources = []
-    for resource in request[:resources]
-      @resources << Resource.new(
-        resource[:path], 
-        resource[:modified_date],
-        resource[:content],
-        resource[:url],
-        @project,
-        @user
-      )
-    end
-  end
-
-    # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
-    # and return a hash containing the parsed data.
-    def parse_request(xml_request)
-      request = {}
-
-      begin
-        compile_request = REXML::Document.new xml_request
-      rescue REXML::ParseException
-        raise CLSI::ParseError, 'malformed XML'
-      end
-
-      compile_tag = compile_request.elements['compile']
-      raise CLSI::ParseError, 'no <compile> ... </> tag found' if compile_tag.nil?
-
-      token_tag = compile_tag.elements['token']
-      raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
-      request[:token] = token_tag.text
-
-      name_tag = compile_tag.elements['name']
-      request[:name] = name_tag.nil? ? nil : name_tag.text
-      
-      
-      request[:options] = {}
-      options_tag = compile_tag.elements['options']
-      unless options_tag.nil?
-        compiler_tag = options_tag.elements['compiler']
-        request[:options][:compiler] = compiler_tag.text unless compiler_tag.nil?
-        output_format_tag = options_tag.elements['output-format']
-        request[:options][:output_format] = output_format_tag.text unless output_format_tag.nil?
-      end
-
-      resources_tag = compile_tag.elements['resources']
-      raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?
-
-      request[:root_resource_path] = resources_tag.attributes['root-resource-path']
-      request[:root_resource_path] ||= 'main.tex'
-
-      request[:resources] = []
-      for resource_tag in resources_tag.elements.to_a
-        raise CLSI::ParseError, "unknown tag: #{resource_tag.name}" unless resource_tag.name == 'resource'
-
-        path = resource_tag.attributes['path']
-        raise CLSI::ParseError, 'no path attribute found' if path.nil?
-
-        modified_date_text = resource_tag.attributes['modified']
-        begin
-          modified_date = modified_date_text.nil? ? nil : DateTime.parse(modified_date_text)
-        rescue ArgumentError
-          raise CLSI::ParseError, 'malformed date'
-        end
-
-        url = resource_tag.attributes['url']
-        content = resource_tag.text
-        if url.blank? and content.blank?
-          raise CLSI::ParseError, 'must supply either content or an URL'
-        end
-
-        request[:resources] << {
-          :path          => path,
-          :modified_date => modified_date,
-          :url           => url,
-          :content       => content
-        }
-      end
-
-      return request
-    end
-
   def compile
+    validate_compile
     write_resources_to_disk
     do_compile
     convert_to_output_format
     move_compiled_files_to_public_dir
   ensure
     move_log_files_to_public_dir
+  end
+
+  def validate_compile
+    if self.user.blank?
+      self.user = User.find_by_token(self.token)
+      raise CLSI::InvalidToken, 'user does not exist' if self.user.nil?
+    end
+    
+    if self.project.blank?
+      if self.name.blank?
+        self.project = Project.create!(:name => generate_unique_string, :user => self.user)
+      else
+        self.project = Project.find(:first, :conditions => {:name => self.name, :user_id => self.user.id})
+        self.project ||= Project.create!(:name => self.name, :user => self..user)
+      end
+    end
+    
+    unless POSSIBLE_COMPILER_OUTPUT_FORMATS.has_key?(self.compiler.to_sym)
+      raise CLSI::UnknownCompiler, "#{self.compiler} is not a valid compiler"
+    end
+    
+    unless POSSIBLE_COMPILER_OUTPUT_FORMATS[self.compiler.to_sym].include?(self.output_format)
+      raise CLSI::ImpossibleOutputFormat, "#{self.compiler} cannot produce #{self.output_format} output"
+    end
   end
 
 private
@@ -228,7 +138,7 @@ private
     when 'latex'
       command = LATEX_COMMAND
     else
-      raise NotImplemented
+      raise NotImplemented # Previous checking means we should never get here!
     end
     return "#{tex_env_variables} #{command} -interaction=batchmode " + 
            "-output-directory=\"#{compile_directory_rel_to_chroot}\" -no-shell-escape " + 
@@ -271,7 +181,8 @@ private
   end
   
   # Everything below here is copied from the mathwiki code. It was ugly when
-  # I first wrote it and it hasn't improved with time. Fixing it would be good.
+  # I first wrote it and, unlike a good wine, it hasn't improved with time. 
+  # Fixing it would be good.
   def run_with_timeout(command, timeout = 10)
     start_time = Time.now
     pid = fork {

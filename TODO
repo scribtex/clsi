@@ -3,7 +3,7 @@ Enhancements:
 ** pdflatex - png, ps
 ** latex - png
 ** xetex - xdv, ps, pdf, png
-** htlatex - html 
+** htlatex - html
 
 * JSON input/output
 

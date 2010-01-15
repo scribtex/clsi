@@ -11,66 +11,63 @@ describe ClsiController do
     end
   end
 
-  describe 'compile' do
-    it "should return a list of compiled files for a successful compile" do
+  describe 'successful compile' do
+    before do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
-      @compile.stub!(:compile)
-      @compile.stub!(:status).and_return(:success)
-      @compile.stub!(:return_files).and_return(['output/output.pdf', 'output/output.log'])
-      Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      @request.env['RAW_POST_DATA'] = 'request_xml'
-      result = post :compile
-      result = response.body
-      
-      parser = REXML::Document.new result
-      parser.elements['compile'].elements['status'].text.should eql 'success'
-      parser.elements['compile'].elements['name'].text.should eql 'My Project'
-
-      file1 = parser.elements['compile'].elements['output'].elements[1]
-      file1.name.should eql 'file'
-      file1.attributes['type'].should eql 'application/pdf'
-      file1.attributes['url'].should eql 'http://test.host/output/output.pdf'
-
-      file2 = parser.elements['compile'].elements['output'].elements[2]
-      file2.name.should eql 'file'
-      file2.attributes['type'].should eql 'text/plain'
-      file2.attributes['url'].should eql 'http://test.host/output/output.log'
+      XMLParser.should_receive(:request_to_compile).with(@request_xml = '<compile>...</compile>').and_return(@compile)
+      @compile.should_receive(:compile)
+      @request.env['RAW_POST_DATA'] = @request_xml
+      post :compile
     end
-
-    it "should return the log file for an unsuccessful compile" do
-      @compile = mock('compile', :project => mock('project', :name => 'My Project'))
-      @compile.stub!(:compile).and_raise(CLSI::NoOutputProduced.new('no compiled documents were produced'))
-      @compile.stub!(:status).and_return(:failed)
-      @compile.stub!(:return_files).and_return(['output/output.log'])
-
-      Compile.should_receive('new_from_request').with('request_xml').and_return(@compile)
-      @request.env['RAW_POST_DATA'] = 'request_xml'
-      result = post :compile
-      result = response.body
-      
-      parser = REXML::Document.new result
-      parser.elements['compile'].elements['status'].text.should eql 'failure'
-      parser.elements['compile'].elements['error'].text.should eql 'NoOutputProduced'
-      parser.elements['compile'].elements['error'].attributes['message'].should eql 'no compiled documents were produced'
-      parser.elements['compile'].elements['name'].text.should eql 'My Project'
-
-      file = parser.elements['compile'].elements['output'].elements[1]
-      file.name.should eql 'file'
-      file.attributes['type'].should eql 'text/plain'
-      file.attributes['url'].should eql 'http://test.host/output/output.log'
+    
+    it "should set the status to success" do
+      assigns[:status].should eql :success
     end
+    
+    it 'should assign the compile object' do
+      assigns[:compile].should eql @compile
+    end
+  end
 
-    it "should return an error message for an unsuccessful compile" do
+  describe 'unsuccessful compile due to bad XML' do
+    before do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))
-      Compile.should_receive('new_from_request').with('bad_xml').and_raise(CLSI::ParseError.new('malformed XML'))
-      @request.env['RAW_POST_DATA'] = 'bad_xml'
-      result = post :compile
-      result = response.body
-      
-      parser = REXML::Document.new result
-      parser.elements['compile'].elements['status'].text.should eql 'failure'
-      parser.elements['compile'].elements['error'].text.should eql 'ParseError'
-      parser.elements['compile'].elements['error'].attributes['message'].should eql 'malformed XML'
+      XMLParser.should_receive(:request_to_compile).with(@request_xml = '<compile>...</compile>').and_raise(
+        CLSI::ParseError.new(@error_message = 'bad xml!')
+      )
+      @compile.should_not_receive(:compile)
+      @request.env['RAW_POST_DATA'] = @request_xml
+      post :compile
+    end
+    
+    it 'should set the status to failure' do
+      assigns[:status].should eql :failure
+    end
+    
+    it 'should set the error type and message' do
+      assigns[:error_type].should eql 'ParseError'
+      assigns[:error_message].should eql @error_message
+    end
+  end
+
+  describe 'unsuccesful compile due to bad LaTeX' do
+    before do
+      @compile = mock('compile', :project => mock('project', :name => 'My Project'))
+      XMLParser.should_receive(:request_to_compile).with(@request_xml = '<compile>...</compile>').and_return(@compile)
+      @compile.should_receive(:compile).and_raise(
+        CLSI::NoOutputProduced.new(@error_message = 'bad LaTeX!')
+      )
+      @request.env['RAW_POST_DATA'] = @request_xml
+      post :compile
+    end
+    
+    it 'should set the status to failure' do
+      assigns[:status].should eql :failure
+    end
+    
+    it 'should set the error type and message' do
+      assigns[:error_type].should eql 'NoOutputProduced'
+      assigns[:error_message].should eql @error_message
     end
   end
 end

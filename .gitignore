@@ -4,3 +4,5 @@ log
 public/output
 test
 chrooted*
+**.DS_Store
+**.tar.gz
