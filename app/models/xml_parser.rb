@@ -9,7 +9,6 @@ class XMLParser
 
     compile.root_resource_path = request[:root_resource_path]
     compile.token = request[:token]
-    compile.name = request[:name]
     
     options = request[:options] || {}
     compile.compiler = options[:compiler] || 'pdflatex'
@@ -22,8 +21,7 @@ class XMLParser
         resource[:modified_date],
         resource[:content],
         resource[:url],
-        compile.project,
-        compile.user
+        compile
       )
     end
     
@@ -48,10 +46,6 @@ class XMLParser
     raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
     request[:token] = token_tag.text
 
-    name_tag = compile_tag.elements['name']
-    request[:name] = name_tag.nil? ? nil : name_tag.text
-    
-    
     request[:options] = {}
     options_tag = compile_tag.elements['options']
     unless options_tag.nil?

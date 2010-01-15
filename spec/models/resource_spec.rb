@@ -2,8 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Resource do
   before(:each) do
-    @user = User.create!
-    @project = Project.create!(:name => 'Test Project', :user => @user)
+    @compile = Compile.new
   end
 
   describe "with content passed directly" do
@@ -13,17 +12,16 @@ describe Resource do
          nil,
          'Test content',
          nil,
-         @project,
-         @user
+         @compile
       )
     end
 
     it "should write the file to disk in the compile directroy" do
       @resource.write_to_disk
-      file_path = File.join(LATEX_COMPILE_DIR, @project.unique_id, 'chapters/main.tex')
+      file_path = File.join(LATEX_COMPILE_DIR, @compile.unique_id, 'chapters/main.tex')
       File.exist?(file_path).should be_true
       File.read(file_path).should eql 'Test content'
-      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @compile.unique_id))
     end
 
     it "should return the content passed directly" do
@@ -39,8 +37,7 @@ describe Resource do
          Time.now - 3.days,
          nil,
          'http://www.example.com/main.tex',
-         @project,
-         @user
+         @compile
       )
     end
     
@@ -111,8 +108,7 @@ describe Resource do
          nil,
          'Content',
          nil,
-         @project,
-         @user
+         @compile
       )
     end
 

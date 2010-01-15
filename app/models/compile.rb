@@ -1,9 +1,10 @@
 require 'rexml/document'
 
 class Compile
-  attr_accessor :token, :user, :name, :project, 
+  attr_accessor :token, :user,
                 :root_resource_path, :resources, 
-                :return_files, :compiler, :output_format
+                :compiler, :output_format
+  attr_reader   :output_files, :log_files, :unique_id
 
   POSSIBLE_COMPILER_OUTPUT_FORMATS = {
     :pdflatex => ['pdf'],
@@ -22,7 +23,8 @@ class Compile
     for attribute_name, value in attributes
       self.send("#{attribute_name}=", value)
     end
-    @return_files = []
+    @output_files = []
+    @log_files = []
   end
 
   def compile
@@ -41,15 +43,6 @@ class Compile
       raise CLSI::InvalidToken, 'user does not exist' if self.user.nil?
     end
     
-    if self.project.blank?
-      if self.name.blank?
-        self.project = Project.create!(:name => generate_unique_string, :user => self.user)
-      else
-        self.project = Project.find(:first, :conditions => {:name => self.name, :user_id => self.user.id})
-        self.project ||= Project.create!(:name => self.name, :user => self..user)
-      end
-    end
-    
     unless POSSIBLE_COMPILER_OUTPUT_FORMATS.has_key?(self.compiler.to_sym)
       raise CLSI::UnknownCompiler, "#{self.compiler} is not a valid compiler"
     end
@@ -57,6 +50,14 @@ class Compile
     unless POSSIBLE_COMPILER_OUTPUT_FORMATS[self.compiler.to_sym].include?(self.output_format)
       raise CLSI::ImpossibleOutputFormat, "#{self.compiler} cannot produce #{self.output_format} output"
     end
+  end
+  
+  def unique_id
+    @unique_id ||= generate_unique_string
+  end
+  
+  def compile_directory
+    @compile_directory ||= File.join(LATEX_COMPILE_DIR, self.unique_id)
   end
 
 private
@@ -94,25 +95,25 @@ private
   end
 
   def move_compiled_files_to_public_dir
-    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.project.unique_id))
+    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.unique_id))
     
-    for output_file in output_files(self.output_format)
+    for output_file in find_output_files_of_type(self.output_format)
       output_path = File.join(compile_directory, output_file)
-      rel_dest_path = File.join('output', self.project.unique_id, output_file)
+      rel_dest_path = File.join('output', self.unique_id, output_file)
       dest_path = File.join(SERVER_ROOT_DIR, rel_dest_path)
       FileUtils.mv(output_path, dest_path)
-      @return_files << rel_dest_path
+      @output_files << OutputFile.new(:path => rel_dest_path)
     end
   end
   
   def move_log_files_to_public_dir
-    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.project.unique_id))
+    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.unique_id))
     
-    output_log_path = File.join(LATEX_COMPILE_DIR, self.project.unique_id, 'output.log')
-    rel_dest_log_path = File.join('output', self.project.unique_id, 'output.log')
+    output_log_path = File.join(compile_directory, 'output.log')
+    rel_dest_log_path = File.join('output', self.unique_id, 'output.log')
     if File.exist?(output_log_path)
       FileUtils.mv(output_log_path, File.join(SERVER_ROOT_DIR, rel_dest_log_path))
-      @return_files << rel_dest_log_path
+      @log_files << OutputFile.new(:path => rel_dest_log_path)
     end
   end
   
@@ -124,11 +125,7 @@ private
   end
   
   def compile_directory_rel_to_chroot
-    @compile_directory_rel_to_chroot ||= File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.project.unique_id)
-  end
-  
-  def compile_directory
-    @compile_directory ||= File.join(LATEX_COMPILE_DIR, self.project.unique_id)
+    @compile_directory_rel_to_chroot ||= File.join(LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT, self.unique_id)
   end
   
   def compile_command
@@ -147,7 +144,7 @@ private
   
   # Returns a list of output files of the given type. Will raise a CLSI::NoOutputFile if no output
   # files of the given type exist.
-  def output_files(type)
+  def find_output_files_of_type(type)
     file_name = "output.#{type}"
     output_path = File.join(compile_directory, file_name)
     raise CLSI::NoOutputProduced, 'no compiled documents were produced' unless File.exist?(output_path)
@@ -155,7 +152,7 @@ private
   end
   
   def ensure_output_files_exist(type)
-    output_files(type)
+    find_output_files_of_type(type)
   end
     
   def convert_pdf_to_pdf

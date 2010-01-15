@@ -1,13 +1,12 @@
 class Resource
   attr_reader :path, :modified_date, :url
 
-  def initialize(path, modified_date, content, url, project, user)
+  def initialize(path, modified_date, content, url, compile)
     @path          = path
     @modified_date = modified_date
     @content       = content
     @url           = url
-    @project       = project
-    @user          = user
+    @compile       = compile
   end
 
   # Return the content of this resource. This might come from being passed
@@ -22,12 +21,11 @@ class Resource
   # Return the path where this resource should be written to for compiling
   def path_to_file_on_disk
     # Must expand any /../s to get absolute directories
-    path = File.expand_path(File.join(LATEX_COMPILE_DIR, @project.unique_id, @path))
-    compile_directory = File.expand_path(File.join(LATEX_COMPILE_DIR, @project.unique_id))
+    path = File.expand_path(File.join(@compile.compile_directory, self.path))
 
     # Check that the path begins with the compile directory and is thus inside it
-    len = compile_directory.length
-    unless path[0,len] == compile_directory
+    len = @compile.compile_directory.length
+    unless path[0,len] == @compile.compile_directory
       raise CLSI::InvalidPath, 'path is not inside the compile directory'
     end
 

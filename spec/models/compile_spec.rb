@@ -7,25 +7,6 @@ describe Compile do
       @compile = Compile.new(:token => @user.token)
     end
 
-    it "should create a project with a random name if none is supplied" do
-      @compile.validate_compile
-      @compile.project.name.should_not be_blank
-    end
-
-    it "should find an existing project if the name is already in use by the user" do
-      @project = Project.create!(:name => 'Existing Project', :user => @user)
-      @compile.name = @project.name
-      @compile.validate_compile
-      @compile.project.should eql(@project)
-    end
-
-    it "should create a new project if the name is already in use but by a different user" do
-      @another_user = User.create!
-      @project = Project.create!(:name => 'Existing Project', :user => @another_user)
-      @compile.validate_compile
-      @compile.project.should_not eql(@project)
-    end
-
     it "should raise a CLSI::InvalidToken error if it's token doesn't correspond to a user" do
       @compile.token = Digest::MD5.hexdigest('blah')
       lambda{
@@ -53,54 +34,50 @@ describe Compile do
     before(:all) do
       @compile = Compile.new
       @user = User.create!
-      @project = Project.create!(:name => 'Test Project', :user => @user)
       @compile.user = @user
-      @compile.project = @project
       @compile.root_resource_path = 'main.tex'
       @compile.resources = []
       @compile.resources << Resource.new(
         'main.tex', nil,
         '\\documentclass{article} \\begin{document} \\input{chapters/chapter1} \\end{document}', nil,
-        @project,
-        @user
+        @compile
       )
       @compile.resources << Resource.new(
         'chapters/chapter1.tex', nil,
         'Chapter1 Content!', nil,
-        @project,
-        @user
+        @compile
       )
     end
     
     shared_examples_for 'an output format of pdf' do
       it "should return the PDF for access by the client" do
-        rel_pdf_path = File.join('output', @project.unique_id, 'output.pdf')
-        @compile.return_files.should include(rel_pdf_path)
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_pdf_path)).should be_true
+        rel_path = File.join('output', @compile.unique_id, 'output.pdf')
+        @compile.output_files.should include(OutputFile.new(:path => rel_path))
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
     end
     
     shared_examples_for 'an output format of dvi' do
       it "should return the DVI for access by the client" do
-        rel_path = File.join('output', @project.unique_id, 'output.dvi')
-        @compile.return_files.should include(rel_path)
+        rel_path = File.join('output', @compile.unique_id, 'output.dvi')
+        @compile.output_files.should include(OutputFile.new(:path => rel_path))
         File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
     end
 
     shared_examples_for 'an output format of ps' do
       it "should return the PostScript file for access by the client" do
-        rel_path = File.join('output', @project.unique_id, 'output.ps')
-        @compile.return_files.should include(rel_path)
+        rel_path = File.join('output', @compile.unique_id, 'output.ps')
+        @compile.output_files.should include(OutputFile.new(:path => rel_path))
         File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
     end
     
     shared_examples_for 'a successful compile' do
       it "should return the log for access by the client" do
-        rel_log_path = File.join('output', @project.unique_id, 'output.log')
-        @compile.return_files.should include(rel_log_path)
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
+        rel_path = File.join('output', @compile.unique_id, 'output.log')
+        @compile.log_files.should include(OutputFile.new(:path => rel_path))
+        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
     end
     
@@ -152,8 +129,8 @@ describe Compile do
     end
 
     after(:all) do
-      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
-      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @project.unique_id))
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @compile.unique_id))
+      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
     end
   end
 
@@ -161,29 +138,26 @@ describe Compile do
     before(:all) do
       @compile = Compile.new
       @user = User.create!
-      @project = Project.create!(:name => 'Test Project', :user => @user)
       @compile.user = @user
-      @compile.project = @project
       @compile.root_resource_path = 'main.tex'
       @compile.resources = []
       @compile.resources << Resource.new(
         'main.tex', nil,
         '\\begin{document}', nil,
-        @project,
-        @user
+        @compile
       )
       lambda {@compile.compile}.should raise_error CLSI::NoOutputProduced
     end
 
     it "should return the log for access by the client" do
-      rel_log_path = File.join('output', @project.unique_id, 'output.log')
-      @compile.return_files.should include(rel_log_path)
+      rel_log_path = File.join('output', @compile.unique_id, 'output.log')
+      @compile.log_files.should include(OutputFile.new(:path => rel_log_path))
       File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
     end
 
     after(:all) do
-      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @project.unique_id))
-      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @project.unique_id))
+      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @compile.unique_id))
+      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
     end
   end
 

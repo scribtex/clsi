@@ -85,22 +85,6 @@ describe XMLParser do
       @compile.token.should eql @token
     end
     
-    it 'should set the name' do
-      @compile = XMLParser.request_to_compile(
-        CLSIRequest.valid_request.merge(
-          :name => @name = 'Compile Name'
-        ).to_xml
-      )
-      @compile.name.should eql @name
-    end
-    
-    it "should not set the name if it isn't supplied" do
-      @compile = XMLParser.request_to_compile(
-        CLSIRequest.valid_request.to_xml
-      )
-      @compile.name.should be_blank
-    end
-    
     it 'should set the compiler' do
       @compile = XMLParser.request_to_compile(
         CLSIRequest.valid_request.merge(
