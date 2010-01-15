@@ -35,6 +35,7 @@ class Compile
     move_compiled_files_to_public_dir
   ensure
     move_log_files_to_public_dir
+    remove_compile_directory
   end
 
   def validate_compile
@@ -115,6 +116,10 @@ private
       FileUtils.mv(output_log_path, File.join(SERVER_ROOT_DIR, rel_dest_log_path))
       @log_files << OutputFile.new(:path => rel_dest_log_path)
     end
+  end
+  
+  def remove_compile_directory
+    FileUtils.rm_rf(self.compile_directory)
   end
   
   def tex_env_variables

@@ -79,6 +79,10 @@ describe Compile do
         @compile.log_files.should include(OutputFile.new(:path => rel_path))
         File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
       end
+      
+      it "should remove the compile directory" do
+        File.exist?(@compile.compile_directory).should be_false
+      end
     end
     
     it 'should validate the compile' do
@@ -129,7 +133,6 @@ describe Compile do
     end
 
     after(:all) do
-      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @compile.unique_id))
       FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
     end
   end
@@ -156,7 +159,6 @@ describe Compile do
     end
 
     after(:all) do
-      FileUtils.rm_r(File.join(LATEX_COMPILE_DIR, @compile.unique_id))
       FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
     end
   end
