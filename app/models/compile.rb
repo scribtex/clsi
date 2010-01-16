@@ -123,10 +123,10 @@ private
   end
   
   def tex_env_variables
-    @tex_env_variables ||= "TEXMFOUTPUT=\"#{compile_directory}\" " +
-                           "TEXINPUTS=\"$TEXINPUTS:#{compile_directory}\" " + 
-                           "BIBINPUTS=\"#{compile_directory}:$BIBINPUTS\" " + 
-                           "BSTINPUTS=\"#{compile_directory}:$BSTINPUTS\" "
+    @tex_env_variables ||= "TEXMFOUTPUT=\"#{compile_directory_rel_to_chroot}\" " +
+                           "TEXINPUTS=\"$TEXINPUTS:#{compile_directory_rel_to_chroot}\" " + 
+                           "BIBINPUTS=\"#{compile_directory_rel_to_chroot}:$BIBINPUTS\" " + 
+                           "BSTINPUTS=\"#{compile_directory_rel_to_chroot}:$BSTINPUTS\" "
   end
   
   def compile_directory_rel_to_chroot

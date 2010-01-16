@@ -20,6 +20,7 @@ if RUN_LATEX_CHROOTED
   # can be compiled from chrootedbinary.c. See that source file for 
   # details (don't worry, it's only short!).
   LATEX_COMMAND  = File.join(RAILS_ROOT, 'chrootedlatex')
+  PDFLATEX_COMMAND  = File.join(RAILS_ROOT, 'chrootedpdflatex')
   BIBTEX_COMMAND = File.join(RAILS_ROOT, 'chrootedbibtex')
   DVIPDF_COMMAND = File.join(RAILS_ROOT, 'chrooteddvipdf')
   DVIPS_COMMAND  = File.join(RAILS_ROOT, 'chrooteddvips')
