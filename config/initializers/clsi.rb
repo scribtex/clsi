@@ -1,4 +1,4 @@
 require 'exceptions'
 require 'utilities'
 
-require 'latex_config'
+require 'config/latex_config'

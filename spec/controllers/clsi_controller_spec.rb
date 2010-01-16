@@ -1,16 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe ClsiController do
-  describe 'getToken' do
-    it "should return a token and create a user with that token" do
-      get :get_token
-      token = response.body
-      token.length.should eql 32
-      user = User.find_by_token(token)
-      user.should_not be_nil
-    end
-  end
-
   describe 'successful compile' do
     before do
       @compile = mock('compile', :project => mock('project', :name => 'My Project'))

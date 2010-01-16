@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-PDFTOTEXT_PATH = '/opt/local/bin/pdftotext'
-PSTOPDF_PATH = 'pstopdf'
-DVITOPDF_PATH = '/opt/local/bin/dvipdf'
+PDFTOTEXT_PATH = 'pdftotext'
+PSTOPDF_PATH = 'ps2pdf'
+DVITOPDF_PATH = 'dvipdf'
 
 describe ClsiController do
   integrate_views
@@ -81,7 +81,7 @@ describe ClsiController do
       ps_path_on_disk = @clsi_response[:output_files].first[:url].gsub("http://#{HOST}", SERVER_PUBLIC_DIR)
       pdf_path_on_disk = ps_path_on_disk.gsub('.ps', '.pdf')
       
-      systemu([PSTOPDF_PATH, ps_path_on_disk, "-o", pdf_path_on_disk])
+      systemu([PSTOPDF_PATH, ps_path_on_disk, pdf_path_on_disk])
       
       status, stdout, stdin = systemu([PDFTOTEXT_PATH, pdf_path_on_disk, '-'])
       

@@ -1,5 +1,6 @@
 require 'systemu'
 require 'uri'
+require 'digest/md5'
 
 def generate_unique_string
   Digest::MD5.hexdigest((Time.now.to_f + rand).to_s)
