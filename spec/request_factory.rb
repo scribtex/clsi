@@ -24,6 +24,7 @@ class CLSIRequest < HashWithIndifferentAccess
       resource_options.merge!("root-resource-path" => self[:root_resource_path]) unless self[:root_resource_path].blank?
       xml.resources(resource_options) do
         for resource in self[:resources].to_a do
+          resource = resource.dup
           content = resource.delete(:content)
           xml.resource(resource) do
             if options[:with_cdata_tags]
