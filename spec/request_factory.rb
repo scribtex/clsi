@@ -6,7 +6,7 @@ class CLSIRequest < HashWithIndifferentAccess
     )
   end
   
-  def to_xml(options = {})
+  def to_xml(options = {:with_cdata_tags => true})
     xml = Builder::XmlMarkup.new(:indent => 2)
     xml.instruct!
     
@@ -40,6 +40,47 @@ class CLSIRequest < HashWithIndifferentAccess
   alias :old_merge :merge
   def merge(other)
     CLSIRequest.new(self.old_merge(other))
+  end
+  
+end
+
+class CLSIResponse < HashWithIndifferentAccess
+  
+  def self.new_from_xml(xml)
+    response = self.new
+    response_xml = REXML::Document.new xml
+    compile_tag = response_xml.elements['compile']
+    
+    response[:status] = compile_tag.elements['status'].text
+    
+    if compile_tag.elements['error']
+      response[:error_type] = compile_tag.elements['error'].elements['type'].text
+      response[:error_message] = compile_tag.elements['error'].elements['message'].text
+    end
+    
+    if compile_tag.elements['output']
+      response[:output_files] = []
+      for file_tag in compile_tag.elements['output'].elements.to_a
+        response[:output_files] << {
+          :url      => file_tag.attributes['url'],
+          :type     => file_tag.attributes['type'],
+          :mimetype => file_tag.attributes['mimetype']
+        }
+      end
+    end
+    
+    if compile_tag.elements['logs']
+      response[:log_files] = []
+      for file_tag in compile_tag.elements['logs'].elements.to_a
+        response[:log_files] << {
+          :url      => file_tag.attributes['url'],
+          :type     => file_tag.attributes['type'],
+          :mimetype => file_tag.attributes['mimetype']
+        }
+      end
+    end
+    
+    return response
   end
   
 end

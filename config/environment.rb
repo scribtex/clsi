@@ -74,8 +74,3 @@ Rails::Initializer.run do |config|
   # config.active_record.observers = :cacher, :garbage_collector, :forum_observer
 end
 
-require 'latex_config'
-require 'server_config'
-
-require 'exceptions'
-require 'utilities'

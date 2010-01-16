@@ -19,9 +19,3 @@ def media_type_from_name(path)
   end
 end
 
-module Utilities
-  def self.get_content_from_url(url)
-    status, stdout, stdin = systemu(['wget', '-O', '-', url])
-    return stdout
-  end
-end

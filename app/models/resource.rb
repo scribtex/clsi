@@ -13,7 +13,7 @@ class Resource
   # directly, from the cache or from an URL.
   def content
     unless @url.nil?
-      @content ||= UrlCache.get_content_from_url(@url, @modified_date)
+      @content = UrlCache.get_content_from_url(@url, @modified_date) if @content.blank?
     end
     @content
   end

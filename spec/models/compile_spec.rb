@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Compile do
   describe "validate_compile" do
-    before(:each) do
+    before do
       @user = User.create!
       @compile = Compile.new(:token => @user.token)
     end
@@ -31,7 +31,7 @@ describe Compile do
   end
 
   describe "successful compile" do
-    before(:all) do
+    before do
       @compile = Compile.new
       @user = User.create!
       @compile.user = @user
@@ -53,7 +53,7 @@ describe Compile do
       it "should return the PDF for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.pdf')
         @compile.output_files.should include(OutputFile.new(:path => rel_path))
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+        File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end
     
@@ -61,7 +61,7 @@ describe Compile do
       it "should return the DVI for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.dvi')
         @compile.output_files.should include(OutputFile.new(:path => rel_path))
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+        File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end
 
@@ -69,7 +69,7 @@ describe Compile do
       it "should return the PostScript file for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.ps')
         @compile.output_files.should include(OutputFile.new(:path => rel_path))
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+        File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end
     
@@ -77,7 +77,7 @@ describe Compile do
       it "should return the log for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.log')
         @compile.log_files.should include(OutputFile.new(:path => rel_path))
-        File.exist?(File.join(SERVER_ROOT_DIR, rel_path)).should be_true
+        File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
       
       it "should remove the compile directory" do
@@ -131,14 +131,10 @@ describe Compile do
       it_should_behave_like 'an output format of ps'
       it_should_behave_like 'a successful compile'
     end
-
-    after(:all) do
-      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
-    end
   end
 
   describe "unsuccessful compile" do
-    before(:all) do
+    before do
       @compile = Compile.new
       @user = User.create!
       @compile.user = @user
@@ -155,11 +151,7 @@ describe Compile do
     it "should return the log for access by the client" do
       rel_log_path = File.join('output', @compile.unique_id, 'output.log')
       @compile.log_files.should include(OutputFile.new(:path => rel_log_path))
-      File.exist?(File.join(SERVER_ROOT_DIR, rel_log_path)).should be_true
-    end
-
-    after(:all) do
-      FileUtils.rm_r(File.join(SERVER_ROOT_DIR, 'output', @compile.unique_id))
+      File.exist?(File.join(SERVER_PUBLIC_DIR, rel_log_path)).should be_true
     end
   end
 

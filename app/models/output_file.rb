@@ -28,7 +28,7 @@ class OutputFile
   end
   
   def url
-    File.join(BASE_URL_FOR_OUTPUT_FILES, self.path)
+    File.join("http://#{HOST}", self.path)
   end
   
   def ==(other)

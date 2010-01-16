@@ -96,24 +96,24 @@ private
   end
 
   def move_compiled_files_to_public_dir
-    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.unique_id))
+    FileUtils.mkdir_p(File.join(SERVER_PUBLIC_DIR, 'output', self.unique_id))
     
     for output_file in find_output_files_of_type(self.output_format)
       output_path = File.join(compile_directory, output_file)
       rel_dest_path = File.join('output', self.unique_id, output_file)
-      dest_path = File.join(SERVER_ROOT_DIR, rel_dest_path)
+      dest_path = File.join(SERVER_PUBLIC_DIR, rel_dest_path)
       FileUtils.mv(output_path, dest_path)
       @output_files << OutputFile.new(:path => rel_dest_path)
     end
   end
   
   def move_log_files_to_public_dir
-    FileUtils.mkdir_p(File.join(SERVER_ROOT_DIR, 'output', self.unique_id))
+    FileUtils.mkdir_p(File.join(SERVER_PUBLIC_DIR, 'output', self.unique_id))
     
     output_log_path = File.join(compile_directory, 'output.log')
     rel_dest_log_path = File.join('output', self.unique_id, 'output.log')
     if File.exist?(output_log_path)
-      FileUtils.mv(output_log_path, File.join(SERVER_ROOT_DIR, rel_dest_log_path))
+      FileUtils.mv(output_log_path, File.join(SERVER_PUBLIC_DIR, rel_dest_log_path))
       @log_files << OutputFile.new(:path => rel_dest_log_path)
     end
   end
