@@ -4,19 +4,21 @@ task :install => ['db:migrate', 'clsi:compile_chrootedlatex'] do
 end
 
 namespace :clsi do
-  task :compile_chrootedlatex do
-    print "Compiling the chrootedlatex binary...\n"
-    latex_compile_command = "gcc chrootedlatex.c -o chrootedlatex -DCHROOT_DIR='\"#{LATEX_CHROOT_DIR}\"' -DLATEX_CMD='\"/bin/pdflatex\"'"
-    print latex_compile_command + "\n"
-    system(latex_compile_command)
-    print "\n"
-    print "Compiling the chrootedbibtex binary...\n\n"
-    system("gcc chrootedlatex.c -o chrootedbibtex -DCHROOT_DIR='\"#{LATEX_CHROOT_DIR}\"' -DLATEX_CMD='\"/bin/bibtex\"'")
-    print "\n"
-    print "Please run the following commands as root to allow the binary to chroot:\n\n"
-    print "\tchown root:root chrootedlatex\n"
-    print "\tchmod a+s chrootedlatex\n"
-    print "\tchown root:root chrootedbibtex\n"
-    print "\tchmod a+s chrootedbibtex\n\n"
+  task :setupchroot do
+    commands = [:pdflatex, :latex, :bibtex, :dvips, :dvipdf]
+    for command in commands
+      print "Compiling the chrooted #{command} binary...\n"
+      compile_command = "gcc chrootedbinary.c -o chrooted#{command} " +
+                        "-DCHROOT_DIR='\"#{LATEX_CHROOT_DIR}\"' " + 
+                        "-DLATEX_CMD='\"/bin/#{command == :dvipdf ? :dvipdfmx : command}\"'"
+      system(compile_command)
+    end
+    
+    print "Please run the following commands as root\n" + 
+          "to give the binaries permission to chroot:\n\n"
+    for command in commands
+      print "\tchown root:root chrooted#{command}\n"
+      print "\tchmod a+s chrooted#{command}\n"
+    end
   end
 end

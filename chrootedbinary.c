@@ -3,9 +3,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-/* You should set CHROOT_DIR and LATEX_CMD when you compile this *
+/* You should set CHROOT_DIR and COMMAND when you compile this *
  *     gcc chrootedlatex.c -o chrootedlatex \\                   *
- *     -DCHROOT_DIR='"/chroot/dir"' -DLATEX_CMD='"/bin/latex"'   */
+ *     -DCHROOT_DIR='"/chroot/dir"' -DCOMMAND='"/bin/latex"'   */
 
 int main(int argc, char *argv[], char *envp[]) {
 
@@ -15,10 +15,10 @@ int main(int argc, char *argv[], char *envp[]) {
     return EXIT_FAILURE;
   }
 
-  /* Execute LaTeX within the chroot and pass it all the arguments we recieved */
-  argv[0] = LATEX_CMD;
-  execve(LATEX_CMD, argv, envp);
+  /* Execute the command within the chroot and pass it all the arguments we recieved */
+  argv[0] = COMMAND;
+  execve(COMMAND, argv, envp);
 
-  /* If we are here then execve return and thus failed. */
+  /* If we are here then execve returned and thus failed. */
   perror("Could not run latex inside the chroot");
 }

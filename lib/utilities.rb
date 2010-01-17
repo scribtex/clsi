@@ -1,5 +1,3 @@
-require 'systemu'
-require 'uri'
 require 'digest/md5'
 
 def generate_unique_string
