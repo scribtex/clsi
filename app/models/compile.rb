@@ -4,7 +4,8 @@ class Compile
   attr_accessor :token, :user,
                 :root_resource_path, :resources, 
                 :compiler, :output_format
-  attr_reader   :output_files, :log_files, :unique_id
+  attr_reader   :output_files, :log_files, :unique_id,
+                :status, :error_type, :error_message
 
   POSSIBLE_COMPILER_OUTPUT_FORMATS = {
     :pdflatex => ['pdf'],
@@ -33,6 +34,11 @@ class Compile
     do_compile
     convert_to_output_format
     move_compiled_files_to_public_dir
+    @status = :success
+  rescue CLSI::CompileError => e
+    @status = :failure
+    @error_type = e.class.name.demodulize
+    @error_message = e.message
   ensure
     move_log_files_to_public_dir
     remove_compile_directory
@@ -59,6 +65,41 @@ class Compile
   
   def compile_directory
     @compile_directory ||= File.join(LATEX_COMPILE_DIR, self.unique_id)
+  end
+  
+  def to_xml
+    xml = Builder::XmlMarkup.new
+    xml.instruct!
+
+    xml.compile do
+      xml.compile_id(self.unique_id)
+      
+      if self.status == :failure
+        xml.status('failure')
+        xml.error do
+          xml.type self.error_type
+          xml.message self.error_message
+        end
+      else
+        xml.status(self.status.to_s)
+      end
+   
+      unless self.output_files.empty?
+        xml.output do
+          for file in self.output_files
+            xml.file(:url => file.url, :type => file.type, :mimetype => file.mimetype)
+          end
+        end
+      end
+  
+      unless self.log_files.empty?
+        xml.logs do
+          for file in self.log_files
+            xml.file(:url => file.url, :type => file.type, :mimetype => file.mimetype)
+          end
+        end
+      end
+    end
   end
 
 private

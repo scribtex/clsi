@@ -5,12 +5,15 @@ class ClsiController < ApplicationController
     request.format = :xml
     xml_request = request.raw_post
     
-    @compile = XMLParser.request_to_compile(xml_request)
+    begin
+      @compile = XMLParser.request_to_compile(xml_request)
+    rescue CLSI::ParseError => e
+      @error_type = e.class.name.demodulize
+      @error_message = e.message
+      render 'compile_parse_error' and return
+    end
+  
     @compile.compile
-    @status = :success
-  rescue CLSI::ParseError, CLSI::CompileError => e
-    @status = :failure
-    @error_type = e.class.name.demodulize
-    @error_message = e.message
+    render :xml => @compile
   end
 end

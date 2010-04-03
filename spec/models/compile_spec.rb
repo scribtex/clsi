@@ -92,6 +92,10 @@ describe Compile do
       it "should remove the compile directory" do
         File.exist?(@compile.compile_directory).should be_false
       end
+      
+      it 'should set the compile status to success' do
+        @compile.status.should eql :success
+      end
     end
     
     it 'should validate the compile' do
@@ -154,7 +158,13 @@ describe Compile do
         '\\begin{document}', nil,
         @compile
       )
-      lambda {@compile.compile}.should raise_error CLSI::NoOutputProduced
+      @compile.compile
+    end
+    
+    it 'should set its status to failure and report errors' do
+      @compile.status.should eql :failure
+      @compile.error_type.should eql 'NoOutputProduced'
+      @compile.error_message.should eql 'no compiled documents were produced'
     end
 
     it "should return the log for access by the client" do
