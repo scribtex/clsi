@@ -5,11 +5,18 @@ Enhancements:
 ** xetex - xdv, ps, pdf, png
 ** htlatex - html
 
+* Bug: file extension may not be 3 letters long
+
 * JSON input/output
 
+* Asynchronous output
+** Store compiles in DB
+
+* Logging of what users do
+
 Self admin:
-* Token duration/expiry
 * Project expiry - projects currently sit forever
+* Url Cache expiry
 
 Security:
 * URL Download size limits

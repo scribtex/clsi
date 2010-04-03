@@ -9,7 +9,7 @@ class OutputFile
   end
   
   def type
-    path.to_s[-3,3]
+    path.split('.').last
   end
   
   def mimetype

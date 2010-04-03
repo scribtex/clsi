@@ -5,6 +5,7 @@ class UrlCache < ActiveRecord::Base
   
   def self.get_content_from_url(url, modified_date)
     existing_cache = UrlCache.find(:first, :conditions => {:url => url})
+    
     if existing_cache.nil? or (not modified_date.nil? and existing_cache.fetched_at < modified_date)
       # Refresh the cache if it doesn't exist or if the resource has a newer modification date
       # If a modification date is not provided the cache will never be refreshed

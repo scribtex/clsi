@@ -52,7 +52,10 @@ describe Compile do
     shared_examples_for 'an output format of pdf' do
       it "should return the PDF for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.pdf')
-        @compile.output_files.should include(OutputFile.new(:path => rel_path))
+        output_file = @compile.output_files.find{|o| o.path = rel_path}
+        output_file.should_not be_nil
+        output_file.type.should eql 'pdf'
+        output_file.mimetype.should eql 'application/pdf'
         File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end
@@ -60,7 +63,10 @@ describe Compile do
     shared_examples_for 'an output format of dvi' do
       it "should return the DVI for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.dvi')
-        @compile.output_files.should include(OutputFile.new(:path => rel_path))
+        output_file = @compile.output_files.find{|o| o.path = rel_path}
+        output_file.should_not be_nil
+        output_file.type.should eql 'dvi'
+        output_file.mimetype.should eql 'application/x-dvi'
         File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end
@@ -68,7 +74,10 @@ describe Compile do
     shared_examples_for 'an output format of ps' do
       it "should return the PostScript file for access by the client" do
         rel_path = File.join('output', @compile.unique_id, 'output.ps')
-        @compile.output_files.should include(OutputFile.new(:path => rel_path))
+        output_file = @compile.output_files.find{|o| o.path = rel_path}
+        output_file.should_not be_nil
+        output_file.type.should eql 'ps'
+        output_file.mimetype.should eql 'application/postscript'
         File.exist?(File.join(SERVER_PUBLIC_DIR, rel_path)).should be_true
       end
     end

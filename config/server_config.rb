@@ -1,2 +1,2 @@
 SERVER_PUBLIC_DIR = File.join(RAILS_ROOT, 'public')
-HOST = 'localhost:3000'
+HOST = '129.234.226.43:3002'
