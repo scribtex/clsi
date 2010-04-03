@@ -1,0 +1,47 @@
+production:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: compiles
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: /usr/texbin/latex
+  pdflatex_command: /usr/texbin/pdflatex
+  bibtex_command: /usr/texbin/bibtex
+  dvipdf_command: /usr/texbin/dvipdfmx
+  dvips_command: /usr/texbin/dvips
+  server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  host: localhost:3000
+  
+development:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: /usr/texbin/latex
+  pdflatex_command: /usr/texbin/pdflatex
+  bibtex_command: /usr/texbin/bibtex
+  dvipdf_command: /usr/texbin/dvipdfmx
+  dvips_command: /usr/texbin/dvips
+  server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  host: localhost:3000
+  
+test:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: compiles
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: /usr/texbin/latex
+  pdflatex_command: /usr/texbin/pdflatex
+  bibtex_command: /usr/texbin/bibtex
+  dvipdf_command: /usr/texbin/dvipdfmx
+  dvips_command: /usr/texbin/dvips
+  server_public_dir: <%= File.join(RAILS_ROOT, 'spec/fixtures/server_output') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  host: localhost:3000

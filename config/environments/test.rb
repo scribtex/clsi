@@ -20,6 +20,3 @@ config.action_controller.allow_forgery_protection    = false
 # The :test delivery method accumulates sent emails in the
 # ActionMailer::Base.deliveries array.
 config.action_mailer.delivery_method = :test
-
-SERVER_PUBLIC_DIR = File.join(RAILS_ROOT, 'spec/fixtures/server_output')
-HOST = 'localhost:3000'

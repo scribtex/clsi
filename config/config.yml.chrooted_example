@@ -1,0 +1,47 @@
+production:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: compiles
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: <%= File.join(RAILS_ROOT, 'chrootedlatex') %>
+  pdflatex_command: <%= File.join(RAILS_ROOT, 'chrootedpdflatex') %>
+  bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
+  dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
+  dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
+  host: localhost:3000
+  
+development:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: compiles
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: <%= File.join(RAILS_ROOT, 'chrootedlatex') %>
+  pdflatex_command: <%= File.join(RAILS_ROOT, 'chrootedpdflatex') %>
+  bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
+  dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
+  dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  host: localhost:3000
+  
+test:
+  latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
+  latex_compile_dir_relative_to_chroot: compiles
+  latex_compile_dir: <%= File.join(RAILS_ROOT, 'latexchroot/compiles') %>
+  latex_command: <%= File.join(RAILS_ROOT, 'chrootedlatex') %>
+  pdflatex_command: <%= File.join(RAILS_ROOT, 'chrootedpdflatex') %>
+  bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
+  dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
+  dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  server_public_dir: <%= File.join(RAILS_ROOT, 'spec/fixtures/server_output') %>
+  compile_timeout: 10
+  bibtex_timeout: 10
+  dvipdf_timeout: 10
+  dvips_timeout: 10
+  host: localhost:3000

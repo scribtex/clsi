@@ -17,7 +17,7 @@ class XMLParser
     compile.resources = []
     for resource in request[:resources]
       compile.resources << Resource.new(
-        resource[:path], 
+        resource[:path],
         resource[:modified_date],
         resource[:content],
         resource[:url],

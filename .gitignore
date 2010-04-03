@@ -6,3 +6,4 @@ test
 chrooted*
 **.DS_Store
 **.tar.gz
+config/config.yml
