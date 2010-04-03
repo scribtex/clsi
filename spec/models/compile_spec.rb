@@ -96,6 +96,12 @@ describe Compile do
       it 'should set the compile status to success' do
         @compile.status.should eql :success
       end
+      
+      it 'should write the xml response to disk for future reference' do
+        response_path = File.join(SERVER_PUBLIC_DIR, 'output', @compile.unique_id, 'response.xml')
+        File.exist?(response_path).should be_true
+        File.read(response_path).should eql @compile.to_xml
+      end
     end
     
     it 'should validate the compile' do
@@ -171,6 +177,12 @@ describe Compile do
       rel_log_path = File.join('output', @compile.unique_id, 'output.log')
       @compile.log_files.should include(OutputFile.new(:path => rel_log_path))
       File.exist?(File.join(SERVER_PUBLIC_DIR, rel_log_path)).should be_true
+    end
+      
+    it 'should write the xml response to disk for future reference' do
+      response_path = File.join(SERVER_PUBLIC_DIR, 'output', @compile.unique_id, 'response.xml')
+      File.exist?(response_path).should be_true
+      File.read(response_path).should eql @compile.to_xml
     end
   end
 

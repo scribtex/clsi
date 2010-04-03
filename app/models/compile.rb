@@ -41,6 +41,7 @@ class Compile
     @error_message = e.message
   ensure
     move_log_files_to_public_dir
+    write_response_to_public_dir
     remove_compile_directory
   end
 
@@ -139,23 +140,23 @@ private
   def move_compiled_files_to_public_dir
     FileUtils.mkdir_p(File.join(SERVER_PUBLIC_DIR, 'output', self.unique_id))
     
-    for output_file in find_output_files_of_type(self.output_format)
-      output_path = File.join(compile_directory, output_file)
-      rel_dest_path = File.join('output', self.unique_id, output_file)
-      dest_path = File.join(SERVER_PUBLIC_DIR, rel_dest_path)
-      FileUtils.mv(output_path, dest_path)
-      @output_files << OutputFile.new(:path => rel_dest_path)
+    for existing_file in find_output_files_of_type(self.output_format)
+      existing_path = File.join(compile_directory, existing_file)
+      relative_output_path = File.join(relative_output_dir, existing_file)
+      output_path = File.join(SERVER_PUBLIC_DIR, relative_output_path)
+      FileUtils.mv(existing_path, output_path)
+      @output_files << OutputFile.new(:path => relative_output_path)
     end
   end
   
   def move_log_files_to_public_dir
-    FileUtils.mkdir_p(File.join(SERVER_PUBLIC_DIR, 'output', self.unique_id))
+    FileUtils.mkdir_p(output_dir)
     
-    output_log_path = File.join(compile_directory, 'output.log')
-    rel_dest_log_path = File.join('output', self.unique_id, 'output.log')
-    if File.exist?(output_log_path)
-      FileUtils.mv(output_log_path, File.join(SERVER_PUBLIC_DIR, rel_dest_log_path))
-      @log_files << OutputFile.new(:path => rel_dest_log_path)
+    existing_log_path = File.join(compile_directory, 'output.log')
+    relative_output_log_path = File.join(relative_output_dir, 'output.log')
+    if File.exist?(existing_log_path)
+      FileUtils.mv(existing_log_path, File.join(SERVER_PUBLIC_DIR, relative_output_log_path))
+      @log_files << OutputFile.new(:path => relative_output_log_path)
     end
   end
   
@@ -163,11 +164,26 @@ private
     FileUtils.rm_rf(self.compile_directory)
   end
   
+  def write_response_to_public_dir
+    FileUtils.mkdir_p(output_dir)
+    File.open(File.join(output_dir, 'response.xml'), 'w') do |f|
+      f.write(self.to_xml)
+    end
+  end
+  
   def tex_env_variables
     @tex_env_variables ||= "TEXMFOUTPUT=\"#{compile_directory_rel_to_chroot}\" " +
                            "TEXINPUTS=\"$TEXINPUTS:#{compile_directory_rel_to_chroot}\" " + 
                            "BIBINPUTS=\"#{compile_directory_rel_to_chroot}:$BIBINPUTS\" " + 
                            "BSTINPUTS=\"#{compile_directory_rel_to_chroot}:$BSTINPUTS\" "
+  end
+  
+  def output_dir
+    File.join(SERVER_PUBLIC_DIR, relative_output_dir)
+  end
+  
+  def relative_output_dir
+    File.join('output', self.unique_id)
   end
   
   def compile_directory_rel_to_chroot
