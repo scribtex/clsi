@@ -1,33 +1,4 @@
 class XMLParser
-  
-  # Create a new Compile instance and load it with the information from the
-  # request.
-  def self.request_to_compile(xml_request)
-    compile = Compile.new
-    
-    request = parse_request(xml_request)
-
-    compile.root_resource_path = request[:root_resource_path]
-    compile.token = request[:token]
-    
-    options = request[:options] || {}
-    compile.compiler = options[:compiler] || 'pdflatex'
-    compile.output_format = options[:output_format] || 'pdf'
-
-    compile.resources = []
-    for resource in request[:resources]
-      compile.resources << Resource.new(
-        resource[:path],
-        resource[:modified_date],
-        resource[:content],
-        resource[:url],
-        compile
-      )
-    end
-    
-    return compile
-  end
-
   # Take an XML document as described at http://code.google.com/p/common-latex-service-interface/wiki/CompileRequestFormat
   # and return a hash containing the parsed data.
   def self.parse_request(xml_request)
@@ -46,13 +17,14 @@ class XMLParser
     raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
     request[:token] = token_tag.text
 
-    request[:options] = {}
     options_tag = compile_tag.elements['options']
     unless options_tag.nil?
       compiler_tag = options_tag.elements['compiler']
-      request[:options][:compiler] = compiler_tag.text unless compiler_tag.nil?
+      request[:compiler] = compiler_tag.text unless compiler_tag.nil?
       output_format_tag = options_tag.elements['output-format']
-      request[:options][:output_format] = output_format_tag.text unless output_format_tag.nil?
+      request[:output_format] = output_format_tag.text unless output_format_tag.nil?
+      asynchronous_tag = options_tag.elements['asynchronous']
+      request[:asynchronous] = ['true', '1'].include?(asynchronous_tag.text) unless asynchronous_tag.nil?
     end
 
     resources_tag = compile_tag.elements['resources']

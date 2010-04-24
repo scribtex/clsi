@@ -6,6 +6,7 @@ require 'spec/autorun'
 require 'spec/rails'
 
 require 'spec/request_factory'
+require 'spec/describe_lots_of_the_form'
 
 Spec::Runner.configure do |config|
   # If you're not using ActiveRecord you should remove these

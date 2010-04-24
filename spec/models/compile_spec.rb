@@ -35,10 +35,10 @@ describe Compile do
       @compile = Compile.new
       @user = User.create!
       @compile.user = @user
-      @compile.root_resource_path = 'main.tex'
+      @compile.root_resource_path = 'main file.tex'
       @compile.resources = []
       @compile.resources << Resource.new(
-        'main.tex', nil,
+        'main file.tex', nil,
         '\\documentclass{article} \\begin{document} \\input{chapters/chapter1} \\end{document}', nil,
         @compile
       )

@@ -13,11 +13,10 @@ class CLSIRequest < HashWithIndifferentAccess
     xml.compile do
       xml.token self[:token]
       xml.name  self[:name]  unless self[:name].blank?
-      unless self[:compiler].blank? and self[:output_format].blank?
-        xml.options do
-          xml.compiler self[:compiler] unless self[:compiler].blank?
-          xml.tag!("output-format", self[:output_format]) unless self[:output_format].blank?
-        end
+      xml.options do
+        xml.compiler self[:compiler] unless self[:compiler].blank?
+        xml.tag!("output-format", self[:output_format]) unless self[:output_format].blank?
+        xml.asynchronous 'true' if self[:asynchronous]
       end
       
       resource_options = {}
@@ -53,6 +52,7 @@ class CLSIResponse < HashWithIndifferentAccess
     compile_tag = response_xml.elements['compile']
     
     response[:status] = compile_tag.elements['status'].text
+    response[:compile_id] = compile_tag.elements['compile_id'].text unless compile_tag.elements['compile_id'].nil?
     
     if compile_tag.elements['error']
       response[:error_type] = compile_tag.elements['error'].elements['type'].text

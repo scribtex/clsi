@@ -12,7 +12,7 @@ class Compile
     :latex    => ['dvi', 'pdf', 'ps']
   }
 
-  def compiler 
+  def compiler
     @compiler ||= 'pdflatex'
   end
 
@@ -21,11 +21,26 @@ class Compile
   end
 
   def initialize(attributes = {})
-    for attribute_name, value in attributes
-      self.send("#{attribute_name}=", value)
+    self.root_resource_path = attributes[:root_resource_path]
+    self.token = attributes[:token]
+    
+    self.compiler = attributes[:compiler]
+    self.output_format = attributes[:output_format]
+
+    self.resources = []
+    for resource in attributes[:resources].to_a
+      self.resources << Resource.new(
+        resource[:path],
+        resource[:modified_date],
+        resource[:content],
+        resource[:url],
+        self
+      )
     end
+    
     @output_files = []
     @log_files = []
+    @status = :unprocessed
   end
 
   def compile
@@ -112,8 +127,7 @@ private
   end
 
   def do_compile
-    bibtex_command = "#{tex_env_variables} #{BIBTEX_COMMAND} " +
-                     "#{self.root_resource_path} &> /dev/null"
+    bibtex_command = ['env', tex_env_variables, BIBTEX_COMMAND, "#{compile_directory_rel_to_chroot}/output"].flatten
 
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
@@ -172,10 +186,10 @@ private
   end
   
   def tex_env_variables
-    @tex_env_variables ||= "TEXMFOUTPUT=\"#{compile_directory_rel_to_chroot}\" " +
-                           "TEXINPUTS=\"$TEXINPUTS:#{compile_directory_rel_to_chroot}\" " + 
-                           "BIBINPUTS=\"#{compile_directory_rel_to_chroot}:$BIBINPUTS\" " + 
-                           "BSTINPUTS=\"#{compile_directory_rel_to_chroot}:$BSTINPUTS\" "
+    @tex_env_variables ||= ["TEXMFOUTPUT=#{compile_directory_rel_to_chroot}",
+                            "TEXINPUTS=#{compile_directory_rel_to_chroot}:",
+                            "BIBINPUTS=#{compile_directory_rel_to_chroot}",
+                            "BSTINPUTS=#{compile_directory_rel_to_chroot}:"]
   end
   
   def output_dir
@@ -199,9 +213,9 @@ private
     else
       raise NotImplemented # Previous checking means we should never get here!
     end
-    return "#{tex_env_variables} #{command} -interaction=batchmode " + 
-           "-output-directory=\"#{compile_directory_rel_to_chroot}\" -no-shell-escape " + 
-           "-jobname=output #{self.root_resource_path} &> /dev/null"
+    return ["env"] + tex_env_variables + [command, "-interaction=batchmode",
+            "-output-directory=#{compile_directory_rel_to_chroot}", "-no-shell-escape", 
+            "-jobname=output", self.root_resource_path]
   end
   
   # Returns a list of output files of the given type. Will raise a CLSI::NoOutputFile if no output
@@ -243,6 +257,8 @@ private
   # I first wrote it and, unlike a good wine, it hasn't improved with time. 
   # Fixing it would be good.
   def run_with_timeout(command, timeout = 10)
+    Rails.logger.debug command.inspect
+    
     start_time = Time.now
     pid = fork {
       exec(*command)
@@ -251,7 +267,7 @@ private
       if Process.waitpid(pid, Process::WNOHANG)
         return pid
       end
-      sleep 0.2 # No need to check too often
+      sleep 0.1 # No need to check too often
     end
     
     # Process never finished

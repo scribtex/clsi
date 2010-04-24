@@ -186,8 +186,7 @@ describe ClsiController do
         post :compile
       end
     end
-
-    
+ 
     describe 'sending the same url again with a newer modification date' do
       it 'should request the url both times' do
         UrlCache.should_receive(:download_url).with(

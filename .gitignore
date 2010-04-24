@@ -7,3 +7,4 @@ chrooted*
 **.DS_Store
 **.tar.gz
 config/config.yml
+spec/fixtures/server_output/
