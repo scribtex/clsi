@@ -175,7 +175,7 @@ private
   end
   
   def remove_compile_directory
-    #FileUtils.rm_rf(self.compile_directory)
+    FileUtils.rm_rf(self.compile_directory)
   end
   
   def write_response_to_public_dir
