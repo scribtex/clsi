@@ -130,8 +130,8 @@ private
     bibtex_command = ['env', tex_env_variables, BIBTEX_COMMAND, "#{compile_directory_rel_to_chroot}/output"].flatten
 
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
     run_with_timeout(bibtex_command, BIBTEX_TIMEOUT)
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
   end
   
@@ -175,7 +175,7 @@ private
   end
   
   def remove_compile_directory
-    FileUtils.rm_rf(self.compile_directory)
+    #FileUtils.rm_rf(self.compile_directory)
   end
   
   def write_response_to_public_dir
