@@ -1,0 +1,11 @@
+development:
+  domain: mydomain.net
+  address: localhost
+  port: 2525
+  
+production:
+  address: smtp.somewhere.net
+  user_name: username
+  password: ********
+  authentication: plain
+  domain: mydomain.net

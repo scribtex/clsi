@@ -13,6 +13,7 @@ production:
   dvips_timeout: 10
   server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
   host: localhost:3000
+  exception_notification_recipient: errors@scribtex.com
   
 development:
   latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
@@ -29,6 +30,7 @@ development:
   dvipdf_timeout: 10
   dvips_timeout: 10
   host: localhost:3000
+  exception_notification_recipient: errors@scribtex.com
   
 test:
   latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
@@ -45,3 +47,4 @@ test:
   dvipdf_timeout: 10
   dvips_timeout: 10
   host: localhost:3000
+  exception_notification_recipient: errors@scribtex.com

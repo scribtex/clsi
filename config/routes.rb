@@ -42,6 +42,10 @@ ActionController::Routing::Routes.draw do |map|
               :controller => 'clsi',
               :action     => 'compile',
               :format     => 'xml'
+              
+  map.compile 'oops',
+              :controller => 'application',
+              :action     => 'oops'
   
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
