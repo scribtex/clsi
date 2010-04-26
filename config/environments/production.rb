@@ -22,3 +22,11 @@ config.action_controller.perform_caching             = true
 
 # Disable delivery errors, bad email addresses will be ignored
 # config.action_mailer.raise_delivery_errors = false
+
+config.action_mailer.perform_deliveries = true
+config.action_mailer.raise_delivery_errors = true
+config.action_mailer.delivery_method = :smtp
+config.action_mailer.smtp_settings = HashWithIndifferentAccess.new(
+  YAML::load(ERB.new(File.read(File.join(RAILS_ROOT, 'config/mailer.yml'))).result)['production']
+)
+
