@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091129154404) do
+ActiveRecord::Schema.define(:version => 20100426155335) do
 
   create_table "projects", :force => true do |t|
     t.string   "name"
@@ -20,9 +20,9 @@ ActiveRecord::Schema.define(:version => 20091129154404) do
   end
 
   create_table "url_caches", :force => true do |t|
-    t.string   "url",        :null => false
-    t.datetime "fetched_at", :null => false
-    t.binary   "content"
+    t.string   "url",                            :null => false
+    t.datetime "fetched_at",                     :null => false
+    t.binary   "content",    :limit => 16777216
   end
 
   create_table "users", :force => true do |t|
