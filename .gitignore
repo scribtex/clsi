@@ -9,3 +9,4 @@ chrooted*
 config/config.yml
 spec/fixtures/server_output/
 config/mailer.yml
+config/database.yml
