@@ -4,13 +4,13 @@ task :install => ['db:migrate', 'clsi:compile_chrootedlatex'] do
 end
 
 namespace :clsi do
-  task :setupchroot do
+  task :setupchroot => :environment do
     commands = [:pdflatex, :latex, :bibtex, :dvips, :dvipdf]
     for command in commands
       print "Compiling the chrooted #{command} binary...\n"
       compile_command = "gcc chrootedbinary.c -o chrooted#{command} " +
                         "-DCHROOT_DIR='\"#{LATEX_CHROOT_DIR}\"' " + 
-                        "-DLATEX_CMD='\"/bin/#{command == :dvipdf ? :dvipdfmx : command}\"'"
+                        "-DCOMMAND='\"/bin/#{command == :dvipdf ? :dvipdfmx : command}\"'"
       system(compile_command)
     end
     
