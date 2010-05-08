@@ -9,13 +9,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100426155335) do
+ActiveRecord::Schema.define(:version => 20100507114117) do
 
   create_table "url_caches", :force => true do |t|
-    t.string   "url",                              :null => false
-    t.datetime "fetched_at",                       :null => false
-    t.binary   "content",    :limit => 2147483647
+    t.string   "url",                            :null => false
+    t.datetime "fetched_at",                     :null => false
+    t.binary   "content",    :limit => 16777215
   end
+
+  add_index "url_caches", ["url"], :name => "index_url_caches_on_url"
 
   create_table "users", :force => true do |t|
     t.string   "token"
