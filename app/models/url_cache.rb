@@ -11,7 +11,11 @@ class UrlCache < ActiveRecord::Base
       # If a modification date is not provided the cache will never be refreshed
       content = UrlCache.download_url(url)
       existing_cache.destroy unless existing_cache.nil?
-      UrlCache.create!(:url => url, :content => content, :fetched_at => Time.now)
+      
+      # This might fail if the URL has been fetched by another request simulatenously.
+      # This is sloppy but OK since the content is still returned, and on next access
+      # the cached URL will be used.
+      UrlCache.create(:url => url, :content => content, :fetched_at => Time.now)
     else
       content = existing_cache.content
     end
