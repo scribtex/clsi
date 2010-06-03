@@ -46,17 +46,25 @@ describe ClsiController, 'compiling' do
   
   shared_examples_for 'with valid latex passed via urls' do
     before do 
-      UrlCache.should_receive(:download_url).with('http://test.host/chapter2.tex').and_return(
-        File.read(File.join(RESOURCE_FIXTURES_DIR, 'chapters/chapter2.tex'))
+      UrlCache.should download_url(
+        'http://test.host/chapter2.tex',
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'chapters/chapter2.tex')),
+        anything
       )
-      UrlCache.should_receive(:download_url).with('http://test.host/chapter1.tex').and_return(
-        File.read(File.join(RESOURCE_FIXTURES_DIR, 'chapters/chapter1.tex'))
+      UrlCache.should download_url(
+        'http://test.host/chapter1.tex',
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'chapters/chapter1.tex')),
+        anything
       )
-      UrlCache.should_receive(:download_url).with('http://test.host/book.tex').and_return(
-        File.read(File.join(RESOURCE_FIXTURES_DIR, 'book.tex'))
+      UrlCache.should download_url(
+        'http://test.host/book.tex',
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'book.tex')),
+        anything
       )
-      UrlCache.should_receive(:download_url).with('http://test.host/bibliography.bib').and_return(
-        File.read(File.join(RESOURCE_FIXTURES_DIR, 'bibliography.bib'))
+      UrlCache.should download_url(
+        'http://test.host/bibliography.bib',
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'bibliography.bib')),
+        anything
       )
       @clsi_request.merge!({
         :resources => [

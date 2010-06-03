@@ -3,27 +3,45 @@ class UrlCache < ActiveRecord::Base
   
   validates_uniqueness_of :url
   
-  def path_to_file_on_disk
-    File.join(CACHE_DIR, Digest::MD5.hexdigest(self.url))
-  end
+  after_destroy :remove_cache_file
   
-  def self.load_from_url(url, modified_date)
-    cache = UrlCache.find_by_url(url)
+  class << self
+    def load_from_url(url, modified_date)
+      cache = UrlCache.find_by_url(url)
     
-    if cache.nil? 
-      cache = UrlCache.new(:url => url)
-      cache.download! # also saves
-    elsif (not modified_date.nil? and cache.fetched_at < modified_date)
-      cache.download!
+      if cache.nil? 
+        cache = UrlCache.new(:url => url)
+        cache.download! # also saves
+      elsif (not modified_date.nil? and cache.fetched_at < modified_date)
+        cache.download!
+      end
+    
+      return cache
+    end
+  
+    def download_url(url, to_path)
+      status, stdout, stderr = systemu(['wget', '-O', to_path, url])
+      FileUtils.touch(to_path)
+      return true
     end
     
-    return cache
+    def path_from_url(url)
+      File.join(CACHE_DIR, Digest::MD5.hexdigest(url))
+    end
+  end
+  
+  def path_to_file_on_disk
+    UrlCache.path_from_url(self.url)
   end
   
   def download!
-    status, stdout, stderr = systemu(['wget', '-O', self.path_to_file_on_disk, self.url])
-    FileUtils.touch(self.path_to_file_on_disk)
+    FileUtils.mkdir_p(File.dirname(self.path_to_file_on_disk))
+    UrlCache.download_url(self.url, self.path_to_file_on_disk)
     self.fetched_at = Time.now
-    self.save!
+    self.save
+  end
+  
+  def remove_cache_file
+    FileUtils.rm(self.path_to_file_on_disk)
   end
 end

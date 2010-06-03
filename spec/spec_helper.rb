@@ -52,3 +52,14 @@ Spec::Runner.configure do |config|
     FileUtils.rm_rf(SERVER_PUBLIC_DIR)
   end
 end
+
+Spec::Matchers.define :download_url do |url, content, path|
+  match do |url_cache|
+    url_cache.should_receive(:download_url).with(url, path).and_return { |url, path|
+      File.open(path, 'w') {|f|
+        f.write(content)
+      }
+      true
+    }
+  end
+end
