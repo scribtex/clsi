@@ -254,7 +254,7 @@ private
   end
   
   # Everything below here is copied from the mathwiki code. It was ugly when
-  # I first wrote it and, unlike a good wine, it hasn't improved with time. 
+  # I first wrote it and it hasn't improved with time. 
   # Fixing it would be good.
   def run_with_timeout(command, timeout = 10)
     Rails.logger.debug command.inspect

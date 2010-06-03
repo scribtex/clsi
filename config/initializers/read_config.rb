@@ -17,4 +17,6 @@ DVIPS_TIMEOUT   = config['dvips_timeout']
 SERVER_PUBLIC_DIR = config['server_public_dir']
 HOST = config['host']
 
+CACHE_DIR = config['cache_dir']
+
 ExceptionNotifier.exception_recipients = config['exception_notification_recipient'].to_a

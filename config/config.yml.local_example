@@ -14,6 +14,7 @@ production:
   dvips_timeout: 10
   host: localhost:3000
   exception_notification_recipient: errors@examples.com
+  cache_dir: <%= File.join(RAILS_ROOT, 'cache') %>
   
 development:
   latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
@@ -31,6 +32,7 @@ development:
   dvips_timeout: 10
   host: localhost:3000
   exception_notification_recipient: errors@examples.com
+  cache_dir: <%= File.join(RAILS_ROOT, 'cache') %>
   
 test:
   latex_chroot_dir: <%= File.join(RAILS_ROOT, 'latexchroot') %>
@@ -48,3 +50,4 @@ test:
   dvips_timeout: 10
   host: localhost:3000
   exception_notification_recipient: errors@examples.com
+  cache_dir: <%= File.join(RAILS_ROOT, 'cache') %>

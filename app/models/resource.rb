@@ -1,5 +1,5 @@
 class Resource
-  attr_reader :path, :modified_date, :url
+  attr_reader :path, :modified_date, :url, :content
 
   def initialize(path, modified_date, content, url, compile)
     @path          = path
@@ -8,14 +8,9 @@ class Resource
     @url           = url
     @compile       = compile
   end
-
-  # Return the content of this resource. This might come from being passed
-  # directly, from the cache or from an URL.
-  def content
-    unless @url.nil?
-      @content = UrlCache.get_content_from_url(@url, @modified_date) if @content.blank?
-    end
-    @content
+  
+  def is_from_url?
+    !@url.nil?
   end
 
   # Return the path where this resource should be written to for compiling
@@ -38,7 +33,12 @@ class Resource
     path = path_to_file_on_disk
     dir_path = File.dirname(path)
     FileUtils.mkdir_p(dir_path)
-    File.open(path, 'w') {|f| f.write(self.content)}
+    if self.is_from_url?
+      cache = UrlCache.load_from_url(self.url, self.modified_date)
+      FileUtils.cp(cache.path_to_file_on_disk, path)
+    else
+      File.open(path, 'w') {|f| f.write(self.content)}
+    end
   end
 end
 

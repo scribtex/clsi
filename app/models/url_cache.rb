@@ -3,27 +3,27 @@ class UrlCache < ActiveRecord::Base
   
   validates_uniqueness_of :url
   
-  def self.get_content_from_url(url, modified_date)
-    existing_cache = UrlCache.find(:first, :conditions => {:url => url})
-    
-    if existing_cache.nil? or (not modified_date.nil? and existing_cache.fetched_at < modified_date)
-      # Refresh the cache if it doesn't exist or if the resource has a newer modification date
-      # If a modification date is not provided the cache will never be refreshed
-      content = UrlCache.download_url(url)
-      existing_cache.destroy unless existing_cache.nil?
-      
-      # This might fail if the URL has been fetched by another request simulatenously.
-      # This is sloppy but OK since the content is still returned, and on next access
-      # the cached URL will be used.
-      UrlCache.create(:url => url, :content => content, :fetched_at => Time.now)
-    else
-      content = existing_cache.content
-    end
-    return content
+  def path_to_file_on_disk
+    File.join(CACHE_DIR, Digest::MD5.hexdigest(self.url))
   end
   
-  def self.download_url(url)
-    status, stdout, stdin = systemu(['wget', '-O', '-', url])
-    return stdout
+  def self.load_from_url(url, modified_date)
+    cache = UrlCache.find_by_url(url)
+    
+    if cache.nil? 
+      cache = UrlCache.new(:url => url)
+      cache.download! # also saves
+    elsif (not modified_date.nil? and cache.fetched_at < modified_date)
+      cache.download!
+    end
+    
+    return cache
+  end
+  
+  def download!
+    status, stdout, stderr = systemu(['wget', '-O', self.path_to_file_on_disk, self.url])
+    FileUtils.touch(self.path_to_file_on_disk)
+    self.fetched_at = Time.now
+    self.save!
   end
 end
