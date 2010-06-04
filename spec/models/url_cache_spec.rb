@@ -1,6 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe UrlCache do  
+describe UrlCache do
+  before do
+    @time_now = Time.now
+    Time.stub!(:now).and_return(@time_now)
+  end
+   
   shared_examples_for 'with an existing cache' do
     before do
       @existing_cache = UrlCache.create(
@@ -21,6 +26,7 @@ describe UrlCache do
         UrlCache.should download_url(@url, 'downloaded content', anything)
         @new_cache = UrlCache.load_from_url(@url, @fetched_at + 1.day)
         File.read(@new_cache.path_to_file_on_disk).should eql 'downloaded content'
+        @new_cache.last_accessed.should eql @time_now
       end
     end
     
@@ -29,6 +35,7 @@ describe UrlCache do
         UrlCache.should_not_receive(:download_url)
         @new_cache = UrlCache.load_from_url(@url, @fetched_at - 1.day)
         @new_cache.path_to_file_on_disk.should eql @existing_cache.path_to_file_on_disk
+        @new_cache.last_accessed.should eql @time_now
       end
     end
     
@@ -37,6 +44,7 @@ describe UrlCache do
         UrlCache.should_not_receive(:download_url)
         @new_cache = UrlCache.load_from_url(@url, nil)
         @new_cache.path_to_file_on_disk.should eql @existing_cache.path_to_file_on_disk
+        @new_cache.last_accessed.should eql @time_now
       end
     end
   end
@@ -47,6 +55,7 @@ describe UrlCache do
       UrlCache.should download_url(@url, 'downloaded content', anything)
       @new_cache = UrlCache.load_from_url(@url, Time.now)
       File.read(@new_cache.path_to_file_on_disk).should eql 'downloaded content'
+      @new_cache.last_accessed.should eql @time_now
     end
   end
   
