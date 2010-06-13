@@ -1,7 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-RESOURCE_FIXTURES_DIR = File.expand_path(File.dirname(__FILE__) + '/../fixtures/example_latex')
-
 describe ClsiController, 'compiling' do
   integrate_views
   

@@ -127,12 +127,24 @@ private
   end
 
   def do_compile
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    
+    aux_file_content = read_aux_file
+    if aux_file_content.include? '\\citation' or aux_file_content.include? '\\bibdata' or aux_file_content.include? '\\bibstyle'
+      run_bibtex
+    end
+    
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+  end
+  
+  def run_bibtex
     bibtex_command = ['env', tex_env_variables, BIBTEX_COMMAND, "#{compile_directory_rel_to_chroot}/output"].flatten
-
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
     run_with_timeout(bibtex_command, BIBTEX_TIMEOUT)
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+  end
+  
+  def read_aux_file
+    File.read(File.join(self.compile_directory, 'output.aux'))
   end
   
   def convert_to_output_format

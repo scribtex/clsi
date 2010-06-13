@@ -63,3 +63,5 @@ Spec::Matchers.define :download_url do |url, content, path|
     }
   end
 end
+
+RESOURCE_FIXTURES_DIR = File.expand_path(File.dirname(__FILE__) + '/fixtures/example_latex')

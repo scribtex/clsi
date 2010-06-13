@@ -30,7 +30,7 @@ describe Compile do
     end
   end
 
-  describe "successful compile" do
+  describe "different compilers and output formats" do
     before do
       @compile = Compile.new
       @user = User.create!
@@ -104,11 +104,6 @@ describe Compile do
       end
     end
     
-    it 'should validate the compile' do
-      @compile.should_receive(:validate_compile)
-      @compile.compile
-    end
-    
     describe 'with pdflatex compiler and output format of pdf' do
       before do
         @compile.compile
@@ -149,6 +144,87 @@ describe Compile do
 
       it_should_behave_like 'an output format of ps'
       it_should_behave_like 'a successful compile'
+    end
+  end
+
+  describe "bibtex" do
+    before do
+      @compile = Compile.new
+      @user = User.create!
+      @compile.user = @user
+      @compile.root_resource_path = 'main.tex'
+      @compile.resources = []
+      @compile.resources << Resource.new(
+        'bibliography.bib', nil,
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'bibliography.bib')), nil,
+        @compile
+      )
+    end
+    
+    it "should not run when no citations or references to the bibliography are made" do
+      @content = <<-EOS
+        \\documentclass{article}
+        \\begin{document}
+        Hello World.
+        \\end{document}
+      EOS
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        @content, nil,
+        @compile
+      )
+      @compile.should_not_receive(:run_bibtex)
+      @compile.compile
+    end
+    
+    it "should run when citations are made" do
+      @content = <<-EOS
+        \\documentclass{article}
+        \\begin{document}
+        Hello World \\cite{small}.
+        \\end{document}
+      EOS
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        @content, nil,
+        @compile
+      )
+      @compile.should_receive(:run_bibtex)
+      @compile.compile
+    end
+    
+    it "should run when a reference to biliography is made" do
+      @content = <<-EOS
+        \\documentclass{article}
+        \\begin{document}
+        Hello World.
+        \\bibliography{bibliography}
+        \\end{document}
+      EOS
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        @content, nil,
+        @compile
+      )
+      @compile.should_receive(:run_bibtex)
+      @compile.compile
+    end
+    
+    it "should run when a reference to a biliography style is made" do
+      @content = <<-EOS
+        \\documentclass{article}
+        \\begin{document}
+        Hello World.
+        \\bibliographystyle{plain}
+        \\end{document}
+      EOS
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        @content, nil,
+        @compile
+      )
+      @compile.should_receive(:run_bibtex)
+      @compile.compile
     end
   end
 
