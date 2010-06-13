@@ -281,8 +281,96 @@ describe Compile do
       @compile.should_not_receive(:run_makeindex)
       @compile.compile      
     end
+  end
+
+  describe 'references' do
+    before do
+      Compile.send(:public, :run_compiler)
+      class Compile
+        alias :unspecced_run_compiler :run_compiler
+      end
+      @compile = Compile.new
+      @user = User.create!
+      @compile.user = @user
+      @compile.root_resource_path = 'main.tex'
+      @compile.resources = []
+      @compile.resources << Resource.new(
+        'bibliography.bib', nil,
+        File.read(File.join(RESOURCE_FIXTURES_DIR, 'bibliography.bib')), nil,
+        @compile
+      )
+    end
     
+    describe 'document with no references' do
+      before do
+        @content = <<-EOS
+          \\documentclass{article}
+          \\begin{document}
+          Hello World.
+          \\end{document}
+        EOS
+        @compile.resources << Resource.new(
+          'main.tex', nil,
+          @content, nil,
+          @compile
+        )
+      end
+      
+      it 'should only run LaTeX once' do
+        @compile.should_receive(:run_compiler) {
+          @compile.unspecced_run_compiler
+        }.once
+        @compile.compile
+      end
+    end
     
+    describe 'document with references' do
+      before do
+        @content = <<-EOS
+          \\documentclass{article}
+          \\begin{document}
+          Hello World. \\label{example}
+          \\ref{example}
+          \\end{document}
+        EOS
+        @compile.resources << Resource.new(
+          'main.tex', nil,
+          @content, nil,
+          @compile
+        )
+      end
+      
+      it 'should run latex multiple times' do
+        @compile.should_receive(:run_compiler) {
+          @compile.unspecced_run_compiler
+        }.twice
+        @compile.compile
+      end
+    end
+    
+    describe 'document with bibtex and references' do
+      before do
+        @content = <<-EOS
+          \\documentclass{article}
+          \\begin{document}
+          Hello World. \\cite{small}
+          \\bibliographystyle{plain}
+          \\bibliography{bibliography}
+          \\end{document}
+        EOS
+        @compile.resources << Resource.new(
+          'main.tex', nil,
+          @content, nil,
+          @compile
+        )
+      end
+      it 'should run latex before bibtex and multiple times after' do
+        @compile.should_receive(:run_compiler) {
+          @compile.unspecced_run_compiler
+        }.exactly(3).times
+        @compile.compile
+      end
+    end
   end
 
   describe "unsuccessful compile" do

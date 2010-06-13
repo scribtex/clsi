@@ -127,19 +127,28 @@ private
   end
 
   def do_compile
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    run_compiler
     
     aux_file_content = read_aux_file
     if aux_file_content.include? '\\citation' or aux_file_content.include? '\\bibdata' or aux_file_content.include? '\\bibstyle'
       run_bibtex
+      run_latex_again = true
     end
     
     if File.exist?(File.join(compile_directory, 'output.idx'))
       run_makeindex
+      run_latex_again = true
     end
     
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
-    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+    log_content = read_log
+    if log_content.include? 'LaTeX Warning: There were undefined references' or run_latex_again
+      run_compiler
+    end
+    
+    log_content = read_log
+    if log_content.include? 'LaTeX Warning: There were undefined references'
+      run_compiler
+    end
   end
   
   def run_bibtex
@@ -156,8 +165,16 @@ private
     run_with_timeout(makeindex_command, COMPILE_TIMEOUT)
   end
   
+  def run_compiler
+    run_with_timeout(compile_command, COMPILE_TIMEOUT)
+  end
+  
   def read_aux_file
     File.read(File.join(self.compile_directory, 'output.aux'))
+  end
+  
+  def read_log
+    File.read(File.join(self.compile_directory, 'output.log'))
   end
   
   def convert_to_output_format
