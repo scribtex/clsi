@@ -162,10 +162,10 @@ describe ClsiController, 'compiling' do
   shared_examples_for 'pdf returned' do
     it 'should return a pdf' do
       pdf_path_on_disk = @clsi_response[:output_files].first[:url].gsub("http://#{HOST}", SERVER_PUBLIC_DIR)
-      status, stdout, stdin = systemu(['pdftotext', pdf_path_on_disk, '-'])
+      content = read_pdf(pdf_path_on_disk)
       
       for expected_content_fragment in @expected_content do
-        stdout.should include expected_content_fragment
+        content.should include expected_content_fragment
       end
     end
   end
@@ -173,12 +173,10 @@ describe ClsiController, 'compiling' do
   shared_examples_for 'dvi returned' do
     it 'should return a dvi' do
       dvi_path_on_disk = @clsi_response[:output_files].first[:url].gsub("http://#{HOST}", SERVER_PUBLIC_DIR)
-      pdf_path_on_disk = dvi_path_on_disk.gsub('.dvi', '.pdf')
-      systemu(['dvipdf', dvi_path_on_disk, pdf_path_on_disk])
-      status, stdout, stdin = systemu(['pdftotext', pdf_path_on_disk, '-'])
+      content = read_dvi(dvi_path_on_disk)
       
       for expected_content_fragment in @expected_content do
-        stdout.should include expected_content_fragment
+        content.should include expected_content_fragment
       end
     end
   end
@@ -186,12 +184,10 @@ describe ClsiController, 'compiling' do
   shared_examples_for 'ps returned' do
     it 'should return a ps' do
       ps_path_on_disk = @clsi_response[:output_files].first[:url].gsub("http://#{HOST}", SERVER_PUBLIC_DIR)
-      pdf_path_on_disk = ps_path_on_disk.gsub('.ps', '.pdf')
-      systemu(['ps2pdf', ps_path_on_disk, pdf_path_on_disk])
-      status, stdout, stdin = systemu(['pdftotext', pdf_path_on_disk, '-'])
+      content = read_ps(ps_path_on_disk)
       
       for expected_content_fragment in @expected_content do
-        stdout.should include expected_content_fragment
+        content.should include expected_content_fragment
       end
     end
   end

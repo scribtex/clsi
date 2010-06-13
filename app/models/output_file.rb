@@ -31,6 +31,10 @@ class OutputFile
     File.join("http://#{HOST}", self.path)
   end
   
+  def path_on_disk
+    File.join(SERVER_PUBLIC_DIR, path)
+  end
+  
   def ==(other)
     other.path == self.path
   end

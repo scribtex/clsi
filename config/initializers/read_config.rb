@@ -8,6 +8,7 @@ PDFLATEX_COMMAND  = config['pdflatex_command']
 BIBTEX_COMMAND    = config['bibtex_command']
 DVIPDF_COMMAND    = config['dvipdf_command']
 DVIPS_COMMAND     = config['dvips_command']
+MAKEINDEX_COMMAND = config['makeindex_command']
 
 COMPILE_TIMEOUT = config['compile_timeout']
 BIBTEX_TIMEOUT  = config['bibtex_timeout']

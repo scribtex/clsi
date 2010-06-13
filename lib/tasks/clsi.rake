@@ -5,7 +5,7 @@ namespace :clsi do
   
   desc "Compile the chrooted LaTeX binaries"
   task :compile => :environment do
-    commands = [:pdflatex, :latex, :bibtex, :dvips, :dvipdf]
+    commands = [:pdflatex, :latex, :bibtex, :dvips, :dvipdf, :makeindex]
     for command in commands
       print "Compiling the chrooted #{command} binary...\n"
       compile_command = "gcc chrootedbinary.c -o chrooted#{command} " +

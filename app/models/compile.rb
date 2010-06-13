@@ -134,6 +134,10 @@ private
       run_bibtex
     end
     
+    if File.exist?(File.join(compile_directory, 'output.idx'))
+      run_makeindex
+    end
+    
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
   end
@@ -141,6 +145,15 @@ private
   def run_bibtex
     bibtex_command = ['env', tex_env_variables, BIBTEX_COMMAND, "#{compile_directory_rel_to_chroot}/output"].flatten
     run_with_timeout(bibtex_command, BIBTEX_TIMEOUT)
+  end
+  
+  def run_makeindex
+    makeindex_command = [
+      MAKEINDEX_COMMAND,
+      '-o', "#{compile_directory_rel_to_chroot}/output.ind",
+      "#{compile_directory_rel_to_chroot}/output.idx"
+    ]
+    run_with_timeout(makeindex_command, COMPILE_TIMEOUT)
   end
   
   def read_aux_file

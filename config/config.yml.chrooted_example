@@ -7,6 +7,7 @@ production:
   bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
   dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
   dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  makeindex_command: <%= File.join(RAILS_ROOT, 'chrootedmakeindex') %>
   compile_timeout: 10
   bibtex_timeout: 10
   dvipdf_timeout: 10
@@ -25,6 +26,7 @@ development:
   bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
   dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
   dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  makeindex_command: <%= File.join(RAILS_ROOT, 'chrootedmakeindex') %>
   server_public_dir: <%= File.join(RAILS_ROOT, 'public') %>
   compile_timeout: 10
   bibtex_timeout: 10
@@ -43,6 +45,7 @@ test:
   bibtex_command: <%= File.join(RAILS_ROOT, 'chrootedbibtex') %>
   dvipdf_command: <%= File.join(RAILS_ROOT, 'chrooteddvipdf') %>
   dvips_command: <%= File.join(RAILS_ROOT, 'chrooteddvips') %>
+  makeindex_command: <%= File.join(RAILS_ROOT, 'chrootedmakeindex') %>
   server_public_dir: <%= File.join(RAILS_ROOT, 'spec/fixtures/server_output') %>
   compile_timeout: 10
   bibtex_timeout: 10

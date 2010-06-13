@@ -65,3 +65,20 @@ Spec::Matchers.define :download_url do |url, content, path|
 end
 
 RESOURCE_FIXTURES_DIR = File.expand_path(File.dirname(__FILE__) + '/fixtures/example_latex')
+
+def read_pdf(path)
+  status, stdout, stdin = systemu(['pdftotext', path, '-'])
+  return stdout 
+end
+
+def read_dvi(path)
+  pdf_path = path.gsub('.dvi', '.pdf')
+  systemu(['dvipdf', path, pdf_path])
+  return read_pdf(pdf_path)
+end
+
+def read_ps(path)
+  pdf_path = path.gsub('.ps', '.pdf')
+  systemu(['ps2pdf', path, pdf_path])
+  return read_pdf(pdf_path)
+end

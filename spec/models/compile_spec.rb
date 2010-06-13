@@ -228,6 +228,63 @@ describe Compile do
     end
   end
 
+  describe 'makeindex' do
+    before do
+      @compile = Compile.new
+      @user = User.create!
+      @compile.user = @user
+      @compile.root_resource_path = 'main.tex'
+      @compile.resources = []
+    end
+    
+    describe 'with a document containing an index' do
+      before do
+        @content = <<-EOS
+          \\documentclass{article}
+          \\usepackage{makeidx}
+          \\makeindex
+          \\begin{document}
+          Hello World. \\index{Index Entry}
+          \\printindex
+          \\end{document}
+        EOS
+        @compile.resources << Resource.new(
+          'main.tex', nil,
+          @content, nil,
+          @compile
+        )
+      end
+      
+      it 'should run makeindex' do
+        @compile.should_receive(:run_makeindex)
+        @compile.compile
+      end
+      
+      it 'should run successfully and create an index in the document' do
+        @compile.compile
+        read_pdf(@compile.output_files.first.path_on_disk).should include 'Index Entry'
+      end
+    end
+    
+    it 'should not run makeindex if the document does not contain an index' do
+      @content = <<-EOS
+        \\documentclass{article}
+        \\begin{document}
+        Hello World.
+        \\end{document}
+      EOS
+      @compile.resources << Resource.new(
+        'main.tex', nil,
+        @content, nil,
+        @compile
+      )
+      @compile.should_not_receive(:run_makeindex)
+      @compile.compile      
+    end
+    
+    
+  end
+
   describe "unsuccessful compile" do
     before do
       @compile = Compile.new
