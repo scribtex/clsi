@@ -5,7 +5,8 @@ class Compile
                 :root_resource_path, :resources, 
                 :compiler, :output_format
   attr_reader   :output_files, :log_files, :unique_id,
-                :status, :error_type, :error_message
+                :status, :error_type, :error_message,
+                :bibtex_ran, :makeindex_ran
 
   POSSIBLE_COMPILER_OUTPUT_FORMATS = {
     :pdflatex => ['pdf'],
@@ -41,9 +42,12 @@ class Compile
     @output_files = []
     @log_files = []
     @status = :unprocessed
+    @bibtex_ran = false
+    @makeindex_ran = false
   end
 
   def compile
+    @start_time = Time.now
     validate_compile
     write_resources_to_disk
     do_compile
@@ -58,6 +62,7 @@ class Compile
     move_log_files_to_public_dir
     write_response_to_public_dir
     remove_compile_directory
+    record_in_compile_log
   end
 
   def validate_compile
@@ -133,11 +138,13 @@ private
     if aux_file_content.include? '\\citation' or aux_file_content.include? '\\bibdata' or aux_file_content.include? '\\bibstyle'
       run_bibtex
       run_latex_again = true
+      @bibtex_ran = true
     end
     
     if File.exist?(File.join(compile_directory, 'output.idx'))
       run_makeindex
       run_latex_again = true
+      @makeindex_ran = true
     end
     
     log_content = read_log
@@ -225,6 +232,16 @@ private
     File.open(File.join(output_dir, 'response.xml'), 'w') do |f|
       f.write(self.to_xml)
     end
+  end
+  
+  def record_in_compile_log
+    CompileLog.create(
+      :user => user,
+      :time_taken => ((Time.now.to_f - @start_time.to_f) * 1000).to_i, # Time in milliseconds
+      :bibtex_ran => @bibtex_ran,
+      :makeindex_ran => @makeindex_ran
+    )
+      
   end
   
   def tex_env_variables

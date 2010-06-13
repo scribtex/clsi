@@ -9,12 +9,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100604073340) do
+ActiveRecord::Schema.define(:version => 20100613163634) do
 
-  create_table "projects", :force => true do |t|
-    t.string   "name"
-    t.string   "unique_id"
+  create_table "compile_logs", :force => true do |t|
     t.integer  "user_id"
+    t.integer  "time_taken"
+    t.boolean  "bibtex_ran",    :default => false
+    t.boolean  "makeindex_ran", :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
