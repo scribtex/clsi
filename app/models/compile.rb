@@ -134,8 +134,9 @@ private
   def do_compile
     run_compiler
     
-    aux_file_content = read_aux_file
+    aux_file_content = read_aux_files
     if aux_file_content.include? '\\citation' or aux_file_content.include? '\\bibdata' or aux_file_content.include? '\\bibstyle'
+      modify_aux_files
       run_bibtex
       run_latex_again = true
       @bibtex_ran = true
@@ -176,12 +177,28 @@ private
     run_with_timeout(compile_command, COMPILE_TIMEOUT)
   end
   
-  def read_aux_file
-    File.read(File.join(self.compile_directory, 'output.aux'))
+  def read_aux_files
+    aux_file_paths = Dir.entries(self.compile_directory).reject{|e| not e.match(/\.aux$/)}
+    aux_file_paths.collect!{|p| File.join(self.compile_directory, p)}
+    return aux_file_paths.collect{|p| File.read(p)}.join("\n")
+  end
+  
+  def modify_aux_files
+    aux_file_names = Dir.entries(self.compile_directory).reject{|e| not e.match(/\.aux$/)}
+    aux_file_paths = aux_file_names.collect{|n| File.join(self.compile_directory, n)}
+    for aux_file in aux_file_paths
+      content = File.read(aux_file)
+      content.gsub!(/^\\@input\{(.*)\}$/, "\\@input{#{compile_directory_rel_to_chroot}/\\1}")
+      File.open(aux_file, 'w') {|f|
+        f.write(content)
+      }
+    end
   end
   
   def read_log
-    File.read(File.join(self.compile_directory, 'output.log'))
+    log_file_path = File.join(self.compile_directory, 'output.log')
+    return '' unless File.exist?(log_file_path)
+    File.read(log_file_path)
   end
   
   def convert_to_output_format
@@ -241,7 +258,6 @@ private
       :bibtex_ran => @bibtex_ran,
       :makeindex_ran => @makeindex_ran
     )
-      
   end
   
   def tex_env_variables

@@ -35,7 +35,7 @@ describe ClsiController, 'compiling' do
       @clsi_request[:root_resource_path] = 'book.tex'
       @expected_content = [
         'To take a new paragraph all you need to do is miss out a line.',
-        'Here we write about embedding images',
+        'We can reference things in the bibliography',
         'Bibliography',
         'The journal of small papers'
       ]
@@ -87,7 +87,7 @@ describe ClsiController, 'compiling' do
       @clsi_request[:root_resource_path] = 'book.tex'
       @expected_content = [
         'To take a new paragraph all you need to do is miss out a line.',
-        'Here we write about embedding images',
+        'We can reference things in the bibliography',
         'Bibliography',
         'The journal of small papers'
       ]
