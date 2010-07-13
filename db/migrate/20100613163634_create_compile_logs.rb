@@ -7,8 +7,6 @@ class CreateCompileLogs < ActiveRecord::Migration
       t.boolean    :makeindex_ran, :default => false
       t.timestamps
     end
-    
-    drop_table :projects
   end
 
   def self.down
