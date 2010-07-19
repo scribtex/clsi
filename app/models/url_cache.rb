@@ -43,6 +43,6 @@ class UrlCache < ActiveRecord::Base
   end
   
   def remove_cache_file
-    FileUtils.rm(self.path_to_file_on_disk)
+    FileUtils.rm(self.path_to_file_on_disk) if File.exist?(self.path_to_file_on_disk)
   end
 end
