@@ -151,15 +151,12 @@ private
     end
     
     log_content = read_log
-    if log_content.include? 'There were undefined references' 
-    or log_content.include? 'There were undefined citations' 
-    or run_latex_again
+    if log_content.include?('There were undefined references') or log_content.include?('There were undefined citations') or run_latex_again
       run_compiler
     end
     
     log_content = read_log
-    if log_content.include? 'There were undefined references' 
-    or log_content.include? 'There were undefined citations'
+    if log_content.include?('There were undefined references') or log_content.include?('There were undefined citations')
       run_compiler
     end
   end
