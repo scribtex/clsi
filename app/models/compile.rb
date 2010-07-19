@@ -126,6 +126,8 @@ class Compile
 private
 
   def write_resources_to_disk
+    File.umask(0002)
+    
     for resource in self.resources.to_a
       resource.write_to_disk
     end
