@@ -150,15 +150,22 @@ private
       @makeindex_ran = true
     end
     
-    log_content = read_log
-    if log_content.include?('There were undefined references') or log_content.include?('There were undefined citations') or run_latex_again
+    if log_complains_about_references? or run_latex_again
       run_compiler
     end
     
-    log_content = read_log
-    if log_content.include?('There were undefined references') or log_content.include?('There were undefined citations')
+    if log_complains_about_references?
       run_compiler
     end
+  end
+
+  def log_complains_about_references?
+    log_content = read_log
+    log_content.include?('There were undefined references') ||
+    log_content.include?('There were undefined citations') ||
+    log_content.include?('LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.') ||
+    log_content.include?('LaTeX Warning: Citation') ||
+    log_content.include?('No file output.toc')
   end
   
   def run_bibtex
