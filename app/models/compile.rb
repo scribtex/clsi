@@ -328,6 +328,14 @@ private
     output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
     dvipdf_command = "#{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
+
+    # We need to wait a short while for the pdf to appear
+    start_time = Time.now
+    while Time.now - start_time < 3.seconds do
+      break if File.exist?(File.join(compile_directory, 'output.pdf'))
+      sleep 0.1 if (Time.now - start_time > 0.3) # No need to check to often if it's taking a while
+    end
+    Rails.logger.info("I was waiting #{Time.now - start_time} seconds for the dvi to be converted")
   end
   
   def convert_dvi_to_ps
@@ -341,17 +349,16 @@ private
   # I first wrote it and it hasn't improved with time. 
   # Fixing it would be good.
   def run_with_timeout(command, timeout = 10)
-    Rails.logger.debug command.inspect
-    
     start_time = Time.now
     pid = fork {
       exec(*command)
     }
     while Time.now - start_time < timeout
       if Process.waitpid(pid, Process::WNOHANG)
+        Rails.logger.info "(#{Time.now - start_time} seconds) #{command.to_a.join(' ')}"
         return pid
       end
-      sleep 0.1 # No need to check too often
+      sleep 0.1 if (Time.now - start_time > 0.3) # No need to check too often if it's taking a while
     end
     
     # Process never finished
