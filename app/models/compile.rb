@@ -1,5 +1,3 @@
-require 'rexml/document'
-
 class Compile
   attr_accessor :token, :user,
                 :root_resource_path, :resources, 
@@ -61,7 +59,7 @@ class Compile
   ensure
     move_log_files_to_public_dir
     write_response_to_public_dir
-    remove_compile_directory
+    #remove_compile_directory
     record_in_compile_log
   end
 
@@ -326,7 +324,7 @@ private
   def convert_dvi_to_pdf
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
-    dvipdf_command = "#{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
 
     # We need to wait a short while for the pdf to appear
@@ -341,8 +339,16 @@ private
   def convert_dvi_to_ps
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.ps')
-    dvips_command = "#{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    dvips_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
     run_with_timeout(dvips_command, DVIPS_TIMEOUT)
+    
+    # We need to wait a short while for the ps to appear
+    start_time = Time.now
+    while Time.now - start_time < 3.seconds do
+      break if File.exist?(File.join(compile_directory, 'output.ps'))
+      sleep 0.1 if (Time.now - start_time > 0.3) # No need to check to often if it's taking a while
+    end
+    Rails.logger.info("I was waiting #{Time.now - start_time} seconds for the dvi to be converted")
   end
   
   # Everything below here is copied from the mathwiki code. It was ugly when
