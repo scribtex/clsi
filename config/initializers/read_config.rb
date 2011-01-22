@@ -5,6 +5,7 @@ LATEX_COMPILE_DIR_RELATIVE_TO_CHROOT = config['latex_compile_dir_relative_to_chr
 LATEX_COMPILE_DIR = config['latex_compile_dir']
 LATEX_COMMAND     = config['latex_command']
 PDFLATEX_COMMAND  = config['pdflatex_command']
+XELATEX_COMMAND   = config['xelatex_command']
 BIBTEX_COMMAND    = config['bibtex_command']
 DVIPDF_COMMAND    = config['dvipdf_command']
 DVIPS_COMMAND     = config['dvips_command']
