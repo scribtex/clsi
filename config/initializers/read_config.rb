@@ -20,4 +20,6 @@ HOST = config['host']
 
 CACHE_DIR = config['cache_dir']
 
+PRESERVE_COMPILE_DIRECTORIES = config['preserve_compile_directories'] || false
+
 ExceptionNotifier.exception_recipients = config['exception_notification_recipient'].to_a

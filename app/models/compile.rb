@@ -59,7 +59,7 @@ class Compile
   ensure
     move_log_files_to_public_dir
     write_response_to_public_dir
-    #remove_compile_directory
+    remove_compile_directory unless PRESERVE_COMPILE_DIRECTORIES
     record_in_compile_log
   end
 
