@@ -329,7 +329,7 @@ private
   def convert_dvi_to_pdf
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
-    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} \"#{input}\" \"#{output}\" &> /dev/null"
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
 
     # We need to wait a short while for the pdf to appear

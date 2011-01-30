@@ -10,7 +10,7 @@ namespace :clsi do
       print "Compiling the chrooted #{command} binary...\n"
       compile_command = "gcc chrootedbinary.c -o chrooted#{command} " +
                         "-DCHROOT_DIR='\"#{LATEX_CHROOT_DIR}\"' " + 
-                        "-DCOMMAND='\"/bin/#{command == :dvipdf ? :dvipdfmx : command}\"'"
+                        "-DCOMMAND='\"/bin/#{command}\"'"
       system(compile_command)
     end
     
