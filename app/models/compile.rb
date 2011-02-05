@@ -148,6 +148,11 @@ private
       run_latex_again = true
       @makeindex_ran = true
     end
+
+    if File.exist?(File.join(compile_directory, 'output.toc'))
+      # We have a table of contents that needs to be included
+      run_latex_again = true
+    end
     
     if log_complains_about_references? or run_latex_again
       run_compiler
