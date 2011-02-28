@@ -334,7 +334,10 @@ private
   def convert_dvi_to_pdf
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.pdf')
-    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} \"#{input}\" \"#{output}\" &> /dev/null"
+
+    # Note: Adding &> /dev/null to this command makes run_with_timeout return straight away before
+    # command is complete, and I have no idea why. Solution: Don't add it.
+    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} \"#{input}\" \"#{output}\""
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
 
     # We need to wait a short while for the pdf to appear
@@ -349,7 +352,7 @@ private
   def convert_dvi_to_ps
     input = File.join(compile_directory_rel_to_chroot, 'output.dvi')
     output = File.join(compile_directory_rel_to_chroot, 'output.ps')
-    dvips_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\" &> /dev/null"
+    dvips_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\""
     run_with_timeout(dvips_command, DVIPS_TIMEOUT)
     
     # We need to wait a short while for the ps to appear
