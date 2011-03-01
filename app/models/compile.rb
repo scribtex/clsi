@@ -339,14 +339,6 @@ private
     # command is complete, and I have no idea why. Solution: Don't add it.
     dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} \"#{input}\" \"#{output}\""
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
-
-    # We need to wait a short while for the pdf to appear
-    start_time = Time.now
-    while Time.now - start_time < 3.seconds do
-      break if File.exist?(File.join(compile_directory, 'output.pdf'))
-      sleep 0.1 if (Time.now - start_time > 0.3) # No need to check to often if it's taking a while
-    end
-    Rails.logger.info("I was waiting #{Time.now - start_time} seconds for the dvi to be converted")
   end
   
   def convert_dvi_to_ps
@@ -354,14 +346,6 @@ private
     output = File.join(compile_directory_rel_to_chroot, 'output.ps')
     dvips_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPS_COMMAND} -o \"#{output}\" \"#{input}\""
     run_with_timeout(dvips_command, DVIPS_TIMEOUT)
-    
-    # We need to wait a short while for the ps to appear
-    start_time = Time.now
-    while Time.now - start_time < 3.seconds do
-      break if File.exist?(File.join(compile_directory, 'output.ps'))
-      sleep 0.1 if (Time.now - start_time > 0.3) # No need to check to often if it's taking a while
-    end
-    Rails.logger.info("I was waiting #{Time.now - start_time} seconds for the dvi to be converted")
   end
   
   # Everything below here is copied from the mathwiki code. It was ugly when
