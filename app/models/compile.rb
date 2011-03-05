@@ -121,6 +121,38 @@ class Compile
       end
     end
   end
+  
+  def to_json
+    hash = {
+      'compile_id' => self.unique_id,
+      'status'     => self.status.to_s
+    }
+    
+    if self.status == :failure
+      hash['error'] = {
+        'type' => self.error_type,
+        'message' => self.error_message
+      }
+    end
+    
+    unless self.output_files.empty?
+      hash['output_files'] = self.output_files.collect{|of| {
+        'url'      => of.url,
+        'mimetype' => of.mimetype,
+        'type'     => of.type
+      }}
+    end
+    
+    unless self.log_files.empty?
+      hash['logs'] = self.log_files.collect{|lf| {
+        'url'      => lf.url,
+        'mimetype' => lf.mimetype,
+        'type'     => lf.type
+      }}
+    end
+    
+    return ({'compile' => hash}).to_json
+  end
 
 private
 
@@ -263,6 +295,9 @@ private
     FileUtils.mkdir_p(output_dir)
     File.open(File.join(output_dir, 'response.xml'), 'w') do |f|
       f.write(self.to_xml)
+    end
+    File.open(File.join(output_dir, 'response.json'), 'w') do |f|
+      f.write(self.to_json)
     end
   end
   

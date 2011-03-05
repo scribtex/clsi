@@ -406,6 +406,84 @@ describe Compile do
       File.read(response_path).should eql @compile.to_xml
     end
   end
+  
+  describe 'to_json' do
+    before do
+      @compile = Compile.new
+    end
+    
+    it 'should output json' do
+      @compile.instance_variable_set('@status', :success)
+      @compile.instance_variable_set('@unique_id', '1234567890')
+      @compile.output_files << OutputFile.new(:path => 'test.pdf')
+      @compile.log_files    << OutputFile.new(:path => 'test.log')
+      
+      JSON.parse(@compile.to_json).should eql({
+        'compile' => {
+          'compile_id' => @compile.unique_id,
+          'status'     => 'success',
+          'output_files' => @compile.output_files.collect{|of| {
+            'url'      => of.url,
+            'mimetype' => of.mimetype,
+            'type'     => of.type
+          }},
+          'logs' => @compile.log_files.collect{|lf| {
+            'url'      => lf.url,
+            'mimetype' => lf.mimetype,
+            'type'     => lf.type
+          }}
+        }
+      })
+    end
+    
+    it 'should not include output files section if none produced' do
+      @compile.instance_variable_set('@status', :success)
+      @compile.instance_variable_set('@unique_id', '1234567890')
+      @compile.log_files    << OutputFile.new(:path => 'test.log')
+      
+      JSON.parse(@compile.to_json).should eql({
+        'compile' => {
+          'compile_id' => @compile.unique_id,
+          'status'     => 'success',
+          'logs' => @compile.log_files.collect{|lf| {
+            'url'      => lf.url,
+            'mimetype' => lf.mimetype,
+            'type'     => lf.type
+          }}
+        }
+      })
+    end
+    
+    it 'should not include log files section' do
+      @compile.instance_variable_set('@status', :unprocessed)
+      @compile.instance_variable_set('@unique_id', '1234567890')
+      
+      JSON.parse(@compile.to_json).should eql({
+        'compile' => {
+          'compile_id' => @compile.unique_id,
+          'status'     => 'unprocessed'
+        }
+      })
+    end
+    
+    it 'should include an error section if compile failed' do
+      @compile.instance_variable_set('@status', :failure)
+      @compile.instance_variable_set('@unique_id', '1234567890')
+      @compile.instance_variable_set('@error_type', 'ErrorType')
+      @compile.instance_variable_set('@error_message', 'Error Message')
+      
+      JSON.parse(@compile.to_json).should eql({
+        'compile' => {
+          'compile_id' => @compile.unique_id,
+          'status'     => 'failure',
+          'error'      => {
+            'message' => 'Error Message',
+            'type'    => 'ErrorType'
+          }
+        }
+      })
+    end
+  end
 
   describe "timedout compile" do
     it "should timeout" do
