@@ -193,6 +193,10 @@ private
     if log_complains_about_references?
       run_compiler
     end
+
+    if log_complains_about_references?
+      run_compiler
+    end
   end
 
   def log_complains_about_references?
