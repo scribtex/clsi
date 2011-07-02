@@ -2,8 +2,27 @@ class CLSIRequest < HashWithIndifferentAccess
   
   def self.valid_request
     CLSIRequest.new(
-      :token => generate_unique_string
+      :token     => generate_unique_string,
+      :resources => []
     )
+  end
+  
+  def to_json
+    options = {}
+    options[:outputFormat] = self[:output_format] if self.has_key?(:output_format)
+    options[:compiler] = self[:compiler] if self.has_key?(:compiler)
+    options[:asynchronous] = self[:asynchronous] if self.has_key?(:asynchronous)
+  
+    hash = {
+      "token"     => self[:token],
+      "resources" => self[:resources],
+      "options"   => options
+    }
+    
+    hash["rootResourcePath"] = self[:root_resource_path] if self.has_key?(:root_resource_path)
+
+    
+    return ({"compile" => hash}).to_json
   end
   
   def to_xml(options = {:with_cdata_tags => true})
