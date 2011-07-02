@@ -40,8 +40,7 @@ ActionController::Routing::Routes.draw do |map|
   # consider removing the them or commenting them out if you're using named routes and resources.
   map.compile 'clsi/compile',
               :controller => 'clsi',
-              :action     => 'compile',
-              :format     => 'xml'
+              :action     => 'compile'
               
   map.compile 'oops',
               :controller => 'application',

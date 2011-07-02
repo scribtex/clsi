@@ -59,6 +59,8 @@ class JSONParser
     
     request[:resources] = []
     for resource in resources
+      raise CLSI::ParseError, "resource attributes should be hashes" unless resource.is_a?(Hash)
+    
       if resource.has_key?("path")
         path = resource["path"]
       else
