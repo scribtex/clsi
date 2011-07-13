@@ -31,7 +31,6 @@ class XMLParser
     raise CLSI::ParseError, 'no <resources> ... </> tag found' if resources_tag.nil?
 
     request[:root_resource_path] = resources_tag.attributes['root-resource-path']
-    request[:root_resource_path] ||= 'main.tex'
 
     request[:resources] = []
     for resource_tag in resources_tag.elements.to_a

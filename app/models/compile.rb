@@ -21,7 +21,7 @@ class Compile
   end
 
   def initialize(attributes = {})
-    self.root_resource_path = attributes[:root_resource_path]
+    self.root_resource_path = attributes[:root_resource_path] || "main.tex"
     self.token = attributes[:token]
     
     self.compiler = attributes[:compiler]
