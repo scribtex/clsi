@@ -200,8 +200,9 @@ private
     log_content.include?('There were undefined references') ||
     log_content.include?('There were undefined citations') ||
     log_content.include?('LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.') ||
-    log_content.include?('LaTeX Warning: Citation') ||
-    log_content.include?('No file output.toc')
+    log_content.include?('LaTeX Warning: Citation') || # Natbib
+    log_content.include?('No file output.toc') ||
+    log_content.include?('Rerun LaTeX') # The longtables package
   end
   
   def run_bibtex
