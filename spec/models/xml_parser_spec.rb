@@ -15,12 +15,6 @@ describe XMLParser do
       }.should raise_error(CLSI::ParseError, 'no <compile> ... </> tag found')      
     end
 
-    it "should raise a CLSI::ParseError if there is no token tag" do
-      lambda{
-        XMLParser.parse_request('<compile></compile>')
-      }.should raise_error(CLSI::ParseError, 'no <token> ... </> tag found')      
-    end
-
     it "should raise a CLSI::ParseError if there is no resources tag" do
       lambda{
         XMLParser.parse_request(<<-EOS

@@ -21,8 +21,6 @@ class JSONParser
     if compile.has_key?("token")
       raise CLSI::ParseError, "token attribute should be a string" unless compile["token"].is_a?(String)
       request[:token] = compile["token"]
-    else
-      raise CLSI::ParseError, "no token attribute found"
     end
     
     options = compile["options"] || {}

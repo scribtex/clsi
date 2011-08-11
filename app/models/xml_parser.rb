@@ -14,8 +14,9 @@ class XMLParser
     raise CLSI::ParseError, 'no <compile> ... </> tag found' if compile_tag.nil?
 
     token_tag = compile_tag.elements['token']
-    raise CLSI::ParseError, 'no <token> ... </> tag found' if token_tag.nil?
-    request[:token] = token_tag.text
+    unless token_tag.nil?
+      request[:token] = token_tag.text
+    end
 
     options_tag = compile_tag.elements['options']
     unless options_tag.nil?

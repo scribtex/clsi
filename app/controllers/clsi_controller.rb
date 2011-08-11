@@ -35,6 +35,9 @@ class ClsiController < ApplicationController
       }
     end
 
+    if params[:token] and params[:token].is_a?(String)
+      @request_attributes[:token] = params[:token]
+    end
     @compile = Compile.new(@request_attributes)
     @compile.unique_id
     if @request_attributes[:asynchronous]

@@ -26,17 +26,6 @@ describe JSONParser do
       }.should raise_error(CLSI::ParseError, 'compile attribute should be a hash')
     end
     
-    it "should raise a CLSI::ParseError if there is no token attribute" do  
-      lambda{
-        JSONParser.parse_request(<<-EOS
-          {
-            "compile" : {}
-          }
-        EOS
-        )
-      }.should raise_error(CLSI::ParseError, 'no token attribute found')
-    end
-    
     it "should raise a CLSI::ParseError if the token attribute is not a string" do  
       lambda{
         JSONParser.parse_request(<<-EOS
