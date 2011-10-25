@@ -2,6 +2,8 @@ class ClsiController < ApplicationController
   protect_from_forgery :except => [:compile]
 
   def compile
+    request.format = "xml" unless params[:format]
+
     respond_to do |format|
       format.json {
         json_request = request.raw_post
