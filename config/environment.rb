@@ -22,3 +22,7 @@ Rails::Initializer.run do |config|
   }
 end
 
+# Fix the bug described here:http://stackoverflow.com/questions/9122411/rails-javascript-too-many-parameter-keys-whats-a-good-way-to-normalize-f
+# Allows the CLSI to handle large POST requests
+Rack::Utils.key_space_limit = 262144
+
