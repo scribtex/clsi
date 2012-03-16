@@ -2,7 +2,12 @@ class ClsiController < ApplicationController
   protect_from_forgery :except => [:compile]
 
   def compile
-    request.format = "xml" unless params[:format]
+    # Assume a default of XML
+    if request.content_type == "application/json" or params[:format] == "json"
+      request.format = "json"
+    else
+      request.format = "xml"
+    end
 
     respond_to do |format|
       format.json {
