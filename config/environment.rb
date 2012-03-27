@@ -26,4 +26,4 @@ end
 # large requests and we parse it ourselves later.
 Rack::Request::FORM_DATA_MEDIA_TYPES.clear
 Rack::Request::PARSEABLE_DATA_MEDIA_TYPES.clear
-
+ActionController::Base.param_parsers.clear
