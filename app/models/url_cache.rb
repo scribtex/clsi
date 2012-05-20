@@ -15,9 +15,10 @@ class UrlCache < ActiveRecord::Base
       elsif (not modified_date.nil? and cache.fetched_at < modified_date)
         cache.download!
       end
+      cache.fetched_at = modified_date
       cache.last_accessed = Time.now
       cache.save
-    
+
       return cache
     end
   
@@ -39,7 +40,6 @@ class UrlCache < ActiveRecord::Base
   def download!
     FileUtils.mkdir_p(File.dirname(self.path_to_file_on_disk))
     UrlCache.download_url(self.url, self.path_to_file_on_disk)
-    self.fetched_at = Time.now
   end
   
   def remove_cache_file
