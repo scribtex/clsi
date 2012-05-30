@@ -316,10 +316,16 @@ private
   end
   
   def tex_env_variables
-    @tex_env_variables ||= ["TEXMFOUTPUT=#{compile_directory_rel_to_chroot}",
-                            "TEXINPUTS=#{compile_directory_rel_to_chroot}:",
-                            "BIBINPUTS=#{compile_directory_rel_to_chroot}",
-                            "BSTINPUTS=#{compile_directory_rel_to_chroot}:"]
+    root_and_relative_directories = [
+      File.join(compile_directory_rel_to_chroot, File.dirname(self.root_resource_path)),
+      compile_directory_rel_to_chroot
+    ].join(":") + ":"
+    return [
+      "TEXMFOUTPUT=#{compile_directory_rel_to_chroot}",
+      "TEXINPUTS=#{root_and_relative_directories}",
+      "BIBINPUTS=#{root_and_relative_directories}",
+      "BSTINPUTS=#{root_and_relative_directories}"
+    ]
   end
   
   def output_dir
