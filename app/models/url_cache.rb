@@ -23,7 +23,7 @@ class UrlCache < ActiveRecord::Base
     end
   
     def download_url(url, to_path)
-      status, stdout, stderr = systemu(['wget', '--timeout', '10', '--tries', '1', '-O', to_path, url])
+      status, stdout, stderr = systemu(['wget', '--no-check-certificate', '--timeout', '10', '--tries', '1', '-O', to_path, url])
       FileUtils.touch(to_path)
       return true
     end
