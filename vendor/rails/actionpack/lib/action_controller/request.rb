@@ -225,7 +225,7 @@ module ActionController
         not_trusted_addrs = remote_addr_list.reject {|addr| addr =~ TRUSTED_PROXIES}
         return not_trusted_addrs.first unless not_trusted_addrs.empty?
       end
-      remote_ips = @env['HTTP_X_FORWARDED_FOR'] && @env['HTTP_X_FORWARDED_FOR'].split(',')
+      remote_ips = @env['HTTP_X_FORWARDED_FOR'].present? && @env['HTTP_X_FORWARDED_FOR'].split(',')
 
       if @env.include? 'HTTP_CLIENT_IP'
         if ActionController::Base.ip_spoofing_check && remote_ips && !remote_ips.include?(@env['HTTP_CLIENT_IP'])
@@ -446,7 +446,9 @@ EOM
     end
 
     def reset_session
-      session.destroy if session
+      # session may be a hash, if so, we do not want to call destroy
+      # fixes issue 6440
+      session.destroy if session and session.respond_to?(:destroy)
       self.session = {}
     end
 
@@ -489,5 +491,28 @@ EOM
           value
         end
       end
+    protected
+
+    # Remove nils from the params hash
+    def deep_munge(hash)
+      keys = hash.keys.find_all { |k| hash[k] == [nil] }
+      keys.each { |k| hash[k] = nil }
+
+      hash.each_value do |v|
+        case v
+        when Array
+          v.grep(Hash) { |x| deep_munge(x) }
+          v.compact!
+        when Hash
+          deep_munge(v)
+        end
+      end
+
+      hash
+    end
+
+    def parse_query(qs)
+      deep_munge(super)
+    end
   end
 end
