@@ -1,0 +1,21 @@
+#!script/runner
+
+token = ARGV[0]
+
+if !token
+	print "Usage: script/runner script/ensure_token_exists <token>"
+end
+
+u = User.find_by_token token
+
+if !u
+	print "Creating token..."
+	u = User.create :token => token
+	u.token = token
+	u.save
+	print "done\n"
+else
+	print "Token already exists\n"
+end
+
+
