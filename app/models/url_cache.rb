@@ -12,7 +12,7 @@ class UrlCache < ActiveRecord::Base
       if cache.nil? 
         cache = UrlCache.new(:url => url)
         cache.download!
-      elsif (not modified_date.nil? and cache.fetched_at < modified_date)
+      elsif (not modified_date.nil? and cache.fetched_at.to_i < modified_date.to_i)
         cache.download!
       end
       cache.fetched_at = modified_date
