@@ -324,7 +324,9 @@ private
       "TEXMFOUTPUT=#{compile_directory_rel_to_chroot}",
       "TEXINPUTS=#{root_and_relative_directories}",
       "BIBINPUTS=#{root_and_relative_directories}",
-      "BSTINPUTS=#{root_and_relative_directories}"
+      "BSTINPUTS=#{root_and_relative_directories}",
+      "TEXFONTS=#{root_and_relative_directories}",
+      "TFMFONTS=#{root_and_relative_directories}"
     ]
   end
   
