@@ -10,7 +10,7 @@ The main access point to the service is via
 An example JSON request looks like
 
     {
-        "compile" {
+        "compile" : {
             "token" : "...",
             "options" : {
                 "output_format" : "pdf",
