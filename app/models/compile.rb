@@ -9,7 +9,8 @@ class Compile
   POSSIBLE_COMPILER_OUTPUT_FORMATS = {
     :pdflatex => ['pdf'],
     :latex    => ['dvi', 'pdf', 'ps'],
-    :xelatex  => ['pdf']
+    :xelatex  => ['pdf'],
+    :lualatex  => ['pdf']
   }
 
   def compiler
@@ -259,6 +260,8 @@ private
       input_format = 'dvi'
     when 'xelatex'
       input_format = 'pdf'
+    when 'lualatex'
+      input_format = 'pdf'
     end
     ensure_output_files_exist(input_format)
     conversion_method = "convert_#{input_format}_to_#{self.output_format}"
@@ -350,6 +353,8 @@ private
       command = LATEX_COMMAND
     when 'xelatex'
       command = XELATEX_COMMAND
+    when 'lualatex'
+      command = LUALATEX_COMMAND
     else
       raise NotImplemented # Previous checking means we should never get here!
     end
