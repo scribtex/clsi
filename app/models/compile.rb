@@ -390,7 +390,7 @@ private
 
     # Note: Adding &> /dev/null to this command makes run_with_timeout return straight away before
     # command is complete, and I have no idea why. Solution: Don't add it.
-    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} \"#{input}\" \"#{output}\""
+    dvipdf_command = "env TEXPICTS=#{compile_directory_rel_to_chroot} #{DVIPDF_COMMAND} -o \"#{output}\" \"#{input}\"" 
     run_with_timeout(dvipdf_command, DVIPDF_TIMEOUT)
   end
   

@@ -27,7 +27,7 @@ An example JSON request looks like
                     "modified" : "2012-02-14 12:36:54" 
                 }
             ],
-            "root_resource_path" : "main.tex"
+            "rootResourcePath" : "main.tex"
         }
     }
 
